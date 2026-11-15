@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
@@ -23,16 +24,29 @@ class User:
     def create(cls, *, email: str, name: str) -> "User":
         """Build a new user with a normalized email (trimmed, lowercase); validates the fields."""
         normalized = normalize_email(email)
-        if len(normalized) > EMAIL_MAX or not _EMAIL_RE.match(normalized):
+        if not is_valid_email(normalized):
             raise ValidationError("email is not valid")
         clean_name = name.strip()
-        if not 1 <= len(clean_name) <= NAME_MAX:
-            raise ValidationError(f"name must be 1-{NAME_MAX} characters")
+        if not 1 <= len(clean_name) <= NAME_MAX or _has_control_characters(clean_name):
+            raise ValidationError(f"name must be 1-{NAME_MAX} printable characters")
         return cls(id=uuid4(), email=normalized, name=clean_name)
 
 
 def normalize_email(email: str) -> str:
     return email.strip().lower()
+
+
+def _has_control_characters(value: str) -> bool:
+    return any(unicodedata.category(char) == "Cc" for char in value)
+
+
+def is_valid_email(normalized_email: str) -> bool:
+    """True for an address that could be registered (and that the database can store)."""
+    return (
+        len(normalized_email) <= EMAIL_MAX
+        and not _has_control_characters(normalized_email)
+        and _EMAIL_RE.match(normalized_email) is not None
+    )
 
 
 def check_password(password: str) -> None:
