@@ -37,3 +37,11 @@ No new endpoints.
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `test_auth_rate_limit.py`: `test_ac01_*` (login and register limits, uniform 429, per route, per address, other endpoints unaffected); `test_settings.py`: `test_ac01_*` (default, environment, invalid value) | api, infrastructure |
+| AC-02 | `test_rate_limit_key.py`, `test_user_rate_limit.py`, `test_composition.py`: `test_ac02_*` (valid token, anonymous, forged and expired tokens, separate budgets, default limit on every route) | infrastructure, api |
+| AC-03 | `test_notifications.py`: `test_ac03_*`; `test_tasks_api.py`: `test_ac07_*` (one message on assign, none for no-ops, unassign or failures); `test_notification_failure.py` | infrastructure, api |
+| AC-04 | `test_notifications.py`: `test_ac04_*` (log line, idempotent, retry configuration, final failure logged) | infrastructure |
+| AC-05 | `test_notifications.py`: `test_ac05_*` (retries, bounded, unreachable broker); `test_notification_failure.py`: `test_ac05_*` (request succeeds, assignment stored) | infrastructure, api |
+| AC-06 | `test_seed.py`: `test_ac06_*` (users, statuses, overdue and upcoming, logins) | composition |
+| AC-07 | `test_seed.py`: `test_ac07_*` (second run changes nothing, message) | composition |
+| AC-08 | `test_seed.py`: `test_ac08_*` (production guard); `test_compose_and_just.py`: `test_ac08_just_seed_runs_the_seed_command`; README | composition, justfile |
