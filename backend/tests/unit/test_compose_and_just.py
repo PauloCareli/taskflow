@@ -78,3 +78,11 @@ def test_ac07_just_worker_starts_a_celery_worker_for_the_project_app() -> None:
 
     assert recipe is not None
     assert f"celery -A {CELERY_APP} worker" in recipe.group(1)
+
+
+def test_ac08_just_seed_runs_the_seed_command() -> None:
+    justfile = (ROOT / "justfile").read_text()
+    recipe = re.search(r"^seed:\n((?:[ \t]+.*\n?)+)", justfile, re.MULTILINE)
+
+    assert recipe is not None
+    assert "python -m taskapp.seed" in recipe.group(1)
