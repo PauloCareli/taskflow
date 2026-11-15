@@ -6,13 +6,19 @@ from taskapp.api.dependencies import Dependencies
 from taskapp.infrastructure.db.session import create_engine, create_session_factory
 from taskapp.infrastructure.db.unit_of_work import SqlUnitOfWork
 from taskapp.infrastructure.notifier import LoggingNotifier
+from taskapp.infrastructure.rate_limit import build_limiter, user_or_address_key
 from taskapp.infrastructure.security import Argon2PasswordHasher, JwtTokenService, SystemClock
 from taskapp.infrastructure.settings import Settings
 
 
 def build_app_limiter(settings: Settings) -> Limiter:
     """The default limit, counted per signed-in user and per address for anonymous requests."""
-    raise NotImplementedError
+    tokens = JwtTokenService(settings.jwt_secret.get_secret_value(), SystemClock())
+    return build_limiter(
+        settings.rate_limit_default,
+        settings.redis_url,
+        key_func=user_or_address_key(tokens),
+    )
 
 
 def build_dependencies(settings: Settings) -> Dependencies:
