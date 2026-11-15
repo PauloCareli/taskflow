@@ -19,6 +19,10 @@ down:
 be:
     cd {{backend}} && uv run uvicorn taskapp.main:app --reload
 
+# Run a Celery worker (needs Redis: just up)
+worker:
+    cd {{backend}} && uv run celery -A taskapp.infrastructure.celery_app worker --loglevel=info
+
 # Run tests with coverage (fails under 80%)
 test:
     cd {{backend}} && uv run pytest
