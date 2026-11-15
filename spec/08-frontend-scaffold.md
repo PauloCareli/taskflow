@@ -50,3 +50,16 @@ A Vite + React + TypeScript app that proves the frontend wiring end to end: desi
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `HealthStatus.test.tsx`: `test_ac01_shows_the_api_as_healthy_when_it_responds_ok` | frontend |
+| AC-02 | `HealthStatus.test.tsx`: `test_ac02_shows_only_a_loading_state_while_the_request_is_in_flight` | frontend |
+| AC-03 | `HealthStatus.test.tsx`: `test_ac03_*` (error states, no automatic retry, retry, no concurrent retry, schema) | frontend |
+| AC-04 | `App.test.tsx`: `test_ac04_*` (not found, link home, render error fallback) | frontend |
+| AC-05 | `http.test.ts`: `test_ac05_*` (parsed body, bearer token present and absent) | frontend |
+| AC-06 | `http.test.ts`: `test_ac06_*` (uniform body, other bodies, network, timeout, invalid JSON) | frontend |
+| AC-07 | `env.test.ts`: `test_ac07_*`; `http.test.ts`: `test_ac07_*` (URL joining) | frontend |
+| AC-08 | `env.test.ts`: `test_ac08_*`; build and dev server checked by running them without the variable | frontend |
+| AC-09 | `tokens.test.ts`: `test_ac09_*` (defined once, Tailwind mapping, no hardcoded colors, utility resolves to variable) | frontend |
+| AC-10 | `App.test.tsx`: `test_ac10_*` (shell landmarks, keyboard retry, overflow guards); 360px and 1280px checked in a browser | frontend |
+| AC-11 | `App.test.tsx`: `test_ac11_sends_exactly_one_health_request_and_logs_nothing` | frontend |
+| AC-12 | `consoleGuard.test.ts`: `test_ac12_*`; lint bans checked with a deliberate violation | frontend |
+| AC-13 | `just fe`, `just check` and the CI workflow, run and read | justfile, CI |
