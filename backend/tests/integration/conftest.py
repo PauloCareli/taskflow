@@ -8,9 +8,15 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.pool import NullPool
 
+from taskapp.infrastructure.db.session import create_session_factory
 from taskapp.infrastructure.settings import DEFAULT_DATABASE_URL
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -45,6 +51,11 @@ def test_database_url() -> Iterator[str]:
         yield url
     finally:
         asyncio.run(_admin_execute(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)'))
+
+
+@pytest.fixture
+async def session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+    return create_session_factory(engine)
 
 
 @pytest.fixture
