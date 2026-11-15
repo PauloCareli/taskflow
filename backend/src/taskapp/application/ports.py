@@ -54,8 +54,11 @@ class UserRepository(Protocol):
 
 
 class UnitOfWork(Protocol):
-    tasks: TaskRepository
-    users: UserRepository
+    @property
+    def tasks(self) -> TaskRepository: ...
+
+    @property
+    def users(self) -> UserRepository: ...
 
     async def __aenter__(self) -> Self: ...
 
