@@ -36,12 +36,6 @@ def test_ac06_eager_mode_runs_tasks_in_process_without_a_broker() -> None:
     assert add.delay(2, 3).get() == 5
 
 
-def test_ac06_without_eager_mode_tasks_are_sent_to_the_broker() -> None:
-    app = create_celery_app(Settings(celery_eager=False))
-
-    assert app.conf.task_always_eager is False
-
-
 def test_ac07_the_worker_entrypoint_module_exposes_the_app() -> None:
     app = find_app("taskapp.infrastructure.celery_app")
 

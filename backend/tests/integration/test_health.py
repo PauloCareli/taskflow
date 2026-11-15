@@ -1,6 +1,8 @@
 from httpx import ASGITransport, AsyncClient
+from limits import parse
 
 from taskapp.api.app import create_app
+from taskapp.infrastructure.settings import get_settings
 from taskapp.main import app as main_app
 
 
@@ -22,7 +24,8 @@ async def test_main_app_serves_health() -> None:
 
 
 async def test_ac04_main_app_applies_the_configured_default_limit() -> None:
+    expected = str(parse(get_settings().rate_limit_default))
     groups = main_app.state.limiter._default_limits
     limits = [str(item.limit) for group in groups for item in group]
 
-    assert limits == ["100 per 1 minute"]
+    assert limits == [expected]

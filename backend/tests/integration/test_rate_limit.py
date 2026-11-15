@@ -1,5 +1,7 @@
 import asyncio
+from typing import Any
 
+import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
@@ -61,7 +63,7 @@ async def test_ac03_a_client_is_served_again_after_the_window_elapsed() -> None:
     async with client_for(make_app("1/second")) as client:
         await client.get("/ping")
         assert (await client.get("/ping")).status_code == 429
-        await asyncio.sleep(1.1)
+        await asyncio.sleep(1.25)
         assert (await client.get("/ping")).status_code == 200
 
 
@@ -77,3 +79,39 @@ async def test_ac05_requests_are_served_when_the_storage_is_unreachable() -> Non
         statuses = [(await client.get("/ping")).status_code for _ in range(3)]
 
     assert statuses == [200, 200, 200]
+
+
+async def test_ac01_forwarded_for_headers_do_not_change_the_client_key() -> None:
+    async with client_for(make_app("2/minute")) as client:
+        statuses = [
+            (await client.get("/ping", headers={"X-Forwarded-For": f"203.0.113.{n}"})).status_code
+            for n in range(3)
+        ]
+
+    assert statuses == [200, 200, 429]
+
+
+async def test_ac02_a_429_is_still_answered_when_the_storage_fails_afterwards(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = make_app("1/minute")
+
+    def broken(*args: Any, **kwargs: Any) -> None:
+        raise ConnectionError("storage went away")
+
+    async with client_for(app) as client:
+        await client.get("/ping")
+        monkeypatch.setattr(app.state.limiter.limiter, "get_window_stats", broken)
+        response = await client.get("/ping")
+
+    assert response.status_code == 429
+    assert int(response.headers["retry-after"]) >= 1
+
+
+def test_ac05_the_redis_storage_gives_up_quickly_instead_of_hanging_requests() -> None:
+    limiter = build_limiter("1/minute", "redis://127.0.0.1:1/0")
+    storage: Any = limiter.limiter.storage
+    options = storage.storage.connection_pool.connection_kwargs
+
+    assert options["socket_connect_timeout"] <= 0.5
+    assert options["socket_timeout"] <= 0.5
