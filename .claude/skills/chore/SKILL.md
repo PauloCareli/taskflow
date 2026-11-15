@@ -7,7 +7,7 @@ args: "<fix|chore|refactor|docs|test> <description>"
 For work too small for a full slice plan: bug fixes, dependency bumps, config tweaks, small refactors, doc fixes. If it needs a new AC, a new port, or touches more than ~3 files across layers, stop and use `/feature` instead.
 
 ## Steps
-1. Pick the type (`fix`, `chore`, `refactor`, `docs`, `test`) and a short kebab name. Set up the workspace exactly as in `/feature` (**Branch and worktree** section): `<type>/<name>` from fresh `origin/main`, using a worktree under `../taskflow-worktrees/<type>-<name>` if the current checkout is in use.
+1. Pick the type (`fix`, `chore`, `refactor`, `docs`, `test`) and a short kebab name. Set up the workspace exactly as in `/spec` (**Branch and worktree** section): `<type>/<name>` from fresh `origin/main`, using a worktree under `../taskflow-worktrees/<type>-<name>` if the current checkout is in use.
 2. State in 2-3 lines what changes and which AC (if any) it relates to. Ask only if truly ambiguous.
 3. **Bug fix**: reproduce first with a failing test (red commit `test: reproduce <bug>`), then fix (green commit `fix: ...`). No fix without a regression test.
    **Refactor**: tests must already cover the behavior; add them first if not. Behavior must not change.
