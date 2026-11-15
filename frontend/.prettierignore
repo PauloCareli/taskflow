@@ -1,0 +1,6 @@
+dist
+coverage
+package-lock.json
+ENGINEERING.md
+STYLE.md
+CLAUDE.md

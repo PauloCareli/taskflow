@@ -49,3 +49,17 @@ Entry format:
 - One commit per deliverable, review after each, and the `/health` test committed red before the implementation.
 - Demanded evidence rather than claims: a deliberate import violation, a staged fake secret, `just check` without Docker.
 - A separate reviewer agent checked the branch. Three defects were fixed: gitleaks was a no-op in CI, import contracts were missing libraries, and a settings test depended on the environment (see `corrections.md`).
+
+## 2026-11-15 — Frontend scaffold (#4), plan
+**Request:** plan slice `spec/08-frontend-scaffold.md` (AC-01 to AC-13) on branch `feat/frontend-scaffold`.
+
+**Plan (approved):**
+- **Layers:** backend none. Frontend per `frontend/ENGINEERING.md`: `shared/api` (zod-validated env, fetch client with 10s timeout, `ApiError`, token-provider hook point), `shared/ui` (Button, status message), `features/health` (schema, API call, `useHealth` with `retry: false`, `HealthStatus`), `app` (StrictMode, QueryClient, Router, ErrorBoundary, shell, routes), `test/` (MSW setup, console guard), `styles/tokens.css` (tokens defined once, mapped into Tailwind). Vite dev proxy for `/api` with config-time base URL validation. eslint (typescript-eslint, react-hooks, jsx-a11y, no-console, no-explicit-any, ban-ts-comment), prettier, vitest coverage at 80% (entry file excluded). justfile `fe`, `fe-lint`, `fe-typecheck`, `fe-test` included in `check`; CI gains Node setup and `npm ci`; README, `.env.example`, `.nvmrc`.
+- **Tests, in order:** `parseEnv` (AC-07, AC-08), client success/bearer/`ApiError` variants/timeout/URL joining (AC-05, AC-06, AC-07), health schema and no-auto-retry (AC-03), home page loading/healthy/error/retry (AC-01 to AC-03), routing and error boundary (AC-04), StrictMode single request (AC-11), shell and keyboard retry (AC-10), token mapping and no hardcoded colors (AC-09), console guard (AC-12). AC-12 lint bans and AC-13 are checked by running the gates.
+- **Out of scope:** auth and 401 handling, task screens, hosting and Docker image, light theme, backend changes.
+- **Risks:** Tailwind v4 CSS-first theme mapping (fall back to v3 if it conflicts); jsdom cannot verify layout or computed styles, so 360px and 1280px are checked manually in a browser; `just check` now requires Node 22.
+- **Commits:** tooling, then red tests, then green, then refactor, as small commits.
+
+**Branch:** `feat/frontend-scaffold`
+**Output:** commits `6862189` (tooling); red/green pairs `e0decfd`/`f7da3a4` (AC-12), `d112caf`/`23e3c91` (AC-07, AC-08), `8a1eebd`/`0597aee` (AC-05 to AC-07), `139e603`/`c9c4bec` (AC-01 to AC-03), `c9d446a`/`4871850` (AC-04, AC-10, AC-11), `36e0006`/`6f437ef` (AC-09); `dbf0573` (just, CI, README); `71c70f9` (AC to test table)
+**Review notes:** `just check` green (76 frontend tests, 98.9% statement coverage); the build fails without or with an invalid `VITE_API_BASE_URL` and succeeds with `/api`. Layout at 360px and 1280px and `just fe` serving the page were not verified in a browser.
