@@ -43,5 +43,9 @@ Entry format:
 > - CI runs the same checks as `just check`.
 > - The gitleaks pre-commit hook blocks a staged secret.
 
-**Output:** commits `0eb270b`, `9f9fb36`, `08e5394` (red), `f742f97` (green), `83bf6a2`, `55d0793`, `9e68a23`, `175b2a6`
-**Review notes:** The agent stopped after each numbered item for review. Import-linter contracts were checked with two deliberate violations (domain importing pydantic, domain importing application), then reverted. gitleaks was checked by staging a fake key; the commit was blocked. `just check` was run from a clean clone without Docker. The API cannot import infrastructure per the layer rules, so settings are wired in `taskapp/main.py`, outside the layers. One mistake was logged in `docs/ai/corrections.md`.
+**Output:** commits `0eb270b`, `9f9fb36`, `08e5394` (red), `f742f97` (green), `83bf6a2`, `55d0793`, `9e68a23`, `175b2a6`; review fixes `3a0e5a2`, `99195ab`, `621c227`, `4338aec`, `59b6ddf`
+**Steering:**
+- Prompt scoped to the issue only (no spec dependency); constraints named the libraries to avoid (python-jose, passlib).
+- One commit per deliverable, review after each, and the `/health` test committed red before the implementation.
+- Demanded evidence rather than claims: a deliberate import violation, a staged fake secret, `just check` without Docker.
+- A separate reviewer agent checked the branch. Three defects were fixed: gitleaks was a no-op in CI, import contracts were missing libraries, and a settings test depended on the environment (see `corrections.md`).
