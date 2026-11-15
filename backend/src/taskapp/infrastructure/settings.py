@@ -6,6 +6,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 DEFAULT_DATABASE_URL = "postgresql+asyncpg://taskflow:taskflow@localhost:5432/taskflow"
 
 
+class DatabaseSettings(BaseSettings):
+    database_url: str = DEFAULT_DATABASE_URL
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="TASKAPP_", env_file=".env", extra="ignore")
 
