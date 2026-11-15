@@ -1,5 +1,4 @@
 import asyncio
-import os
 
 from alembic import context
 from sqlalchemy import pool
@@ -7,16 +6,16 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from taskapp.infrastructure.db.models import Base
-from taskapp.infrastructure.settings import DEFAULT_DATABASE_URL
+from taskapp.infrastructure.settings import DatabaseSettings
 
 config = context.config
 target_metadata = Base.metadata
 
 
 def database_url() -> str:
-    return config.get_main_option("sqlalchemy.url") or os.environ.get(
-        "TASKAPP_DATABASE_URL", DEFAULT_DATABASE_URL
-    )
+    # An explicit option (used by tests) wins; otherwise the same source as the app:
+    # TASKAPP_DATABASE_URL, then backend/.env, then the local default.
+    return config.get_main_option("sqlalchemy.url") or DatabaseSettings().database_url
 
 
 def run_migrations_offline() -> None:
