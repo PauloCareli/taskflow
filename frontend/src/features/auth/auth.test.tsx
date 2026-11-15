@@ -110,7 +110,9 @@ describe('auth forms', () => {
     const mock = useApi()
     renderApp('/register')
     await userEvent.click(await screen.findByRole('button', { name: /create account/i }))
-    await waitFor(() => expect(screen.getByLabelText(/name/i)).toHaveAttribute('aria-invalid', 'true'))
+    await waitFor(() =>
+      expect(screen.getByLabelText(/name/i)).toHaveAttribute('aria-invalid', 'true'),
+    )
     expect(screen.getByLabelText(/email/i)).toHaveAttribute('aria-invalid', 'true')
     expect(screen.getByLabelText(/password/i)).toHaveAttribute('aria-invalid', 'true')
     expect(mock.calls).toEqual([])

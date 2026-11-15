@@ -4,6 +4,9 @@ import { http, HttpResponse } from 'msw'
 import { StrictMode } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { AuthProvider } from '../features/auth/components/AuthProvider'
+import { createTestQueryClient } from '../../test/utils'
 import { server } from '../../test/server'
 import { App } from './App'
 import { AppShell } from './AppShell'
@@ -11,7 +14,7 @@ import { createAppRouter } from './router'
 
 const HEALTH = 'http://api.test/health'
 
-function renderApp(path = '/') {
+function renderApp(path = '/status') {
   return render(
     <StrictMode>
       <App router={createAppRouter([path])} />
@@ -27,10 +30,10 @@ describe('routing', () => {
   })
 
   it('test_ac04_the_not_found_link_returns_to_the_home_page', async () => {
-    server.use(http.get(HEALTH, () => HttpResponse.json({ status: 'ok' })))
     renderApp('/nope')
     await userEvent.click(await screen.findByRole('link', { name: /back to home/i }))
-    expect(await screen.findByText(/api is healthy/i)).toBeInTheDocument()
+    // Home is the task list, which sends anonymous users to sign in.
+    expect(await screen.findByRole('heading', { name: /sign in/i })).toBeInTheDocument()
   })
 
   it('test_ac04_a_render_error_shows_a_fallback_and_keeps_the_shell_visible', async () => {
@@ -42,7 +45,13 @@ describe('routing', () => {
       [{ element: <AppShell />, children: [{ path: '/', element: <Bomb /> }] }],
       { initialEntries: ['/'] },
     )
-    render(<RouterProvider router={router} />)
+    render(
+      <QueryClientProvider client={createTestQueryClient()}>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </QueryClientProvider>,
+    )
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/something went wrong/i)
     expect(screen.getByRole('banner')).toBeInTheDocument()
