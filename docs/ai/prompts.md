@@ -63,3 +63,10 @@ Entry format:
 **Branch:** `feat/frontend-scaffold`
 **Output:** commits `6862189` (tooling); red/green pairs `e0decfd`/`f7da3a4` (AC-12), `d112caf`/`23e3c91` (AC-07, AC-08), `8a1eebd`/`0597aee` (AC-05 to AC-07), `139e603`/`c9c4bec` (AC-01 to AC-03), `c9d446a`/`4871850` (AC-04, AC-10, AC-11), `36e0006`/`6f437ef` (AC-09); `dbf0573` (just, CI, README); `71c70f9` (AC to test table)
 **Review notes:** `just check` green (76 frontend tests, 98.9% statement coverage); the build fails without or with an invalid `VITE_API_BASE_URL` and succeeds with `/api`. Layout at 360px and 1280px and `just fe` serving the page were not verified in a browser.
+
+## 2026-11-15 18:40 — Frontend auth and task management (#12)
+**Prompt:**
+> Spec for `spec/12-frontend-app.md` drafted from issue #12. Decisions on the open questions: token in localStorage; sign in automatically after register; current user taken from the token `sub` claim; create and edit in modal dialogs; page size default 25 with previous/next and a dropdown to choose it; due date rejected in the past only on create; date filters read as UTC. Approved, implement.
+
+**Output:** spec `33fc91e`; red/green pairs `6ca278c`/`f298977` (API client writes and 401 hook), `e05a6bf`/`e62f3e8` (AC-01 to AC-03), `02d115e`/`c769635` (AC-04, AC-05), `86f1112`/`6278a3a` (AC-06 to AC-08), `70c725d`/`62eae5a` (review fixes); `1cc1d51` (AC to test table, README); `16a8086` (corrections)
+**Review notes:** `npm run lint`, `npm run typecheck` and `npm test` green (123 tests, 95.9% line coverage). One independent review; three findings confirmed and fixed (dialog focus on re-render, page clamp after deletes, sign-in failure after register), logged in `docs/ai/corrections.md`. Not verified: layout at 360px and 1280px in a browser, and the app against the real API (mocked with MSW until the backend is merged).
