@@ -43,3 +43,11 @@ All errors use the uniform error body from `00-overview`.
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `test_user.py`, `test_auth.py`, `test_security.py`, `test_auth_api.py`: `test_ac01_*` (hash stored, never the password, response has no secrets) | domain, application, infrastructure, api |
+| AC-02 | `test_user.py`, `test_auth.py`, `test_auth_api.py`: `test_ac02_*` (field rules, control characters, 422 and 409 with the uniform body, nothing stored) | domain, application, api |
+| AC-03 | `test_auth.py`, `test_security.py`, `test_auth_api.py`: `test_ac03_*` (token, 1800 seconds, email in any case, token opens `/auth/me`) | application, infrastructure, api |
+| AC-04 | `test_auth.py`, `test_auth_api.py`: `test_ac04_*` (identical 401, hashing work for unknown emails, oversized password) | application, api |
+| AC-05 | `test_security.py`, `test_auth.py`, `test_auth_api.py`, `test_api_errors.py`, `test_settings.py`: `test_ac05_*` (missing, malformed, expired, forged, tampered, unsigned and orphaned tokens; secret rules; uniform 500) | infrastructure, application, api |
+| AC-06 | `test_repositories.py`: `test_ac06_*` (round trip, rollback, users, race, visibility, filters, sort, pagination, statement count) | infrastructure |
+| AC-07 | `test_schema.py`: `test_ac07_*` (case-insensitive unique email, foreign keys, indexes) | infrastructure |
+| AC-08 | `test_schema.py`: `test_ac08_*` (empty database, models match, revert and reapply); `test_settings.py`: `test_ac08_*` (database URL source); `just migrate` run against a scratch database | infrastructure |
