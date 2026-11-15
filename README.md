@@ -34,4 +34,6 @@ Settings come from `TASKAPP_*` environment variables (see `backend/src/taskapp/i
 `just check` does not need Docker.
 
 ## Git hooks
-Install once per clone: `cd backend && uv run pre-commit install`. Hooks run ruff, ruff format, mypy, import-linter and gitleaks, using the versions pinned in `backend/uv.lock`, so they match `just check` and CI. Run them on demand with `uv run --project backend pre-commit run --all-files`.
+Install once per clone: `cd backend && uv run pre-commit install`. The hooks run ruff, ruff format, mypy and import-linter from the versions pinned in `backend/uv.lock`, plus gitleaks and basic file checks pinned in `.pre-commit-config.yaml`. The ruff hooks fix files in place; `just lint` only checks. Run them on demand with `uv run --project backend pre-commit run --all-files`.
+
+CI runs `just check`, the file-hygiene hooks, and a gitleaks scan over the pushed commits.
