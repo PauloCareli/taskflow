@@ -61,3 +61,5 @@ Entry format:
 - **Commits:** tooling, then red tests, then green, then refactor, as small commits.
 
 **Branch:** `feat/frontend-scaffold`
+**Output:** commits `6862189` (tooling); red/green pairs `e0decfd`/`f7da3a4` (AC-12), `d112caf`/`23e3c91` (AC-07, AC-08), `8a1eebd`/`0597aee` (AC-05 to AC-07), `139e603`/`c9c4bec` (AC-01 to AC-03), `c9d446a`/`4871850` (AC-04, AC-10, AC-11), `36e0006`/`6f437ef` (AC-09); `dbf0573` (just, CI, README); `71c70f9` (AC to test table)
+**Review notes:** `just check` green (76 frontend tests, 98.9% statement coverage); the build fails without or with an invalid `VITE_API_BASE_URL` and succeeds with `/api`. Layout at 360px and 1280px and `just fe` serving the page were not verified in a browser.
