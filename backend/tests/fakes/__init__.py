@@ -1,4 +1,6 @@
 from tests.fakes.fakes import (
+    FakePasswordHasher,
+    FakeTokenService,
     FixedClock,
     InMemoryTaskRepository,
     InMemoryUnitOfWork,
@@ -7,6 +9,8 @@ from tests.fakes.fakes import (
 )
 
 __all__ = [
+    "FakePasswordHasher",
+    "FakeTokenService",
     "FixedClock",
     "InMemoryTaskRepository",
     "InMemoryUnitOfWork",
