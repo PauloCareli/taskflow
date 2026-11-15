@@ -1,6 +1,5 @@
 import asyncio
 
-import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
@@ -73,9 +72,7 @@ async def test_ac01_health_is_exempt_from_the_limit() -> None:
     assert statuses == [200] * 5
 
 
-async def test_ac05_requests_are_served_when_the_storage_is_unreachable(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
+async def test_ac05_requests_are_served_when_the_storage_is_unreachable() -> None:
     async with client_for(make_app("1/minute", UNREACHABLE_REDIS)) as client:
         statuses = [(await client.get("/ping")).status_code for _ in range(3)]
 
