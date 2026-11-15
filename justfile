@@ -23,6 +23,10 @@ be:
 migrate:
     cd {{backend}} && uv run alembic upgrade head
 
+# Run a Celery worker (needs Redis: just up)
+worker:
+    cd {{backend}} && uv run celery -A taskapp.infrastructure.celery_app worker --loglevel=info
+
 # Run tests with coverage (fails under 80%)
 test:
     cd {{backend}} && uv run pytest
