@@ -75,7 +75,11 @@ async def engine(test_database_url: str) -> AsyncIterator[AsyncEngine]:
 @pytest.fixture
 async def client(test_database_url: str, engine: AsyncEngine) -> AsyncIterator[AsyncClient]:
     """The whole app (routes, auth, SQL) on the throwaway database, called in-process."""
-    settings = Settings(database_url=test_database_url, jwt_secret=API_SECRET)  # type: ignore[arg-type]
+    settings = Settings(
+        database_url=test_database_url,
+        jwt_secret=API_SECRET,  # type: ignore[arg-type]
+        celery_eager=True,
+    )
     dependencies = build_dependencies(settings)
     app = create_app(dependencies=dependencies)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:

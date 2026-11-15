@@ -3,12 +3,14 @@
 from slowapi import Limiter
 
 from taskapp.api.dependencies import Dependencies
+from taskapp.infrastructure.celery_app import create_celery_app
+from taskapp.infrastructure.celery_notifier import CeleryNotifier
 from taskapp.infrastructure.db.session import create_engine, create_session_factory
 from taskapp.infrastructure.db.unit_of_work import SqlUnitOfWork
-from taskapp.infrastructure.notifier import LoggingNotifier
 from taskapp.infrastructure.rate_limit import build_limiter, user_or_address_key
 from taskapp.infrastructure.security import Argon2PasswordHasher, JwtTokenService, SystemClock
 from taskapp.infrastructure.settings import Settings
+from taskapp.infrastructure.tasks import register_tasks
 
 
 def build_app_limiter(settings: Settings) -> Limiter:
@@ -30,6 +32,6 @@ def build_dependencies(settings: Settings) -> Dependencies:
         hasher=Argon2PasswordHasher(),
         tokens=JwtTokenService(settings.jwt_secret.get_secret_value(), clock),
         clock=clock,
-        notifier=LoggingNotifier(),
+        notifier=CeleryNotifier(register_tasks(create_celery_app(settings))),
         shutdown=engine.dispose,
     )

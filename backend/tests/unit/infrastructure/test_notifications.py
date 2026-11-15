@@ -61,45 +61,47 @@ def test_ac04_running_the_task_again_gives_the_same_outcome(
     assert lines[0] == lines[1]
 
 
-def test_ac04_a_failing_delivery_is_retried_until_it_succeeds(
-    caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+def test_ac04_a_failing_delivery_fails_the_task_so_that_the_worker_can_retry_it(
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     task = register_tasks(eager_app())
-    attempts: list[int] = []
-
-    def flaky(task_id: str, assignee_id: str) -> None:
-        attempts.append(1)
-        if len(attempts) < 3:
-            raise ConnectionError("temporarily down")
-
-    monkeypatch.setattr(tasks_module, "deliver_assignment_message", flaky)
-
-    with caplog.at_level(logging.INFO, logger=LOGGER):
-        result = task.apply(args=(str(uuid4()), str(uuid4())))
-
-    assert result.successful()
-    assert len(attempts) == 3
-    assert records(caplog, logging.ERROR) == []
-
-
-def test_ac04_a_delivery_that_keeps_failing_is_retried_a_bounded_number_of_times_and_logged(
-    caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    task = register_tasks(eager_app())
-    attempts: list[int] = []
 
     def broken(task_id: str, assignee_id: str) -> None:
-        attempts.append(1)
-        raise ConnectionError("still down")
+        raise ConnectionError("down")
 
     monkeypatch.setattr(tasks_module, "deliver_assignment_message", broken)
 
-    with caplog.at_level(logging.INFO, logger=LOGGER):
-        result = task.apply(args=(str(uuid4()), str(uuid4())))
+    with pytest.raises(ConnectionError):
+        task(str(uuid4()), str(uuid4()))
 
-    assert not result.successful()
-    assert len(attempts) == MAX_RETRIES + 1
-    assert len(records(caplog, logging.ERROR)) == 1
+
+def test_ac04_the_worker_retries_a_bounded_number_of_times_with_a_growing_delay() -> None:
+    task = register_tasks(eager_app())
+
+    assert task.autoretry_for == (Exception,)  # type: ignore[attr-defined]
+    assert task.max_retries == MAX_RETRIES
+    assert task.retry_backoff is not False  # type: ignore[attr-defined]
+    assert 0 < task.retry_backoff_max <= 60  # type: ignore[attr-defined]
+
+
+def test_ac04_giving_up_logs_the_error_once_naming_the_task_and_the_assignee(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    task = register_tasks(eager_app())
+    msg = message()
+
+    with caplog.at_level(logging.INFO, logger=LOGGER):
+        task.on_failure(
+            ConnectionError("down"),
+            "celery-id",
+            (str(msg.task_id), str(msg.assignee_id)),
+            {},
+            None,  # type: ignore[arg-type]
+        )
+
+    [error] = records(caplog, logging.ERROR)
+    assert str(msg.task_id) in error.getMessage()
+    assert str(msg.assignee_id) in error.getMessage()
 
 
 async def test_ac03_notifying_runs_the_notification_task_once_with_both_ids(
