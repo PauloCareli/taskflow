@@ -18,3 +18,6 @@ Clean Architecture: `domain` <- `application` <- `infrastructure` / `api`. Bound
 - If commands, env vars, setup or endpoints change, update `README.md` in the same commit.
 - If the user rejects or corrects your approach, propose an entry for `docs/ai/corrections.md`.
 - Never commit secrets.
+
+## Git authorship
+- Commits and PRs are authored only by the logged-in GitHub user. Never add `Co-Authored-By`, "Generated with Claude" or any AI attribution to commit messages, PR bodies or issues.
