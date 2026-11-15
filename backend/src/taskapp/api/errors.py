@@ -59,6 +59,13 @@ async def _request_validation_error(request: Request, exc: Exception) -> JSONRes
     )
 
 
+async def _unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+    # The details stay in the server log (the exception is still raised to the server);
+    # the client only learns that something went wrong.
+    return JSONResponse(_body("internal_error", "Something went wrong", []), status_code=500)
+
+
 def install_error_handlers(app: FastAPI) -> None:
+    app.add_exception_handler(Exception, _unexpected_error)
     app.add_exception_handler(DomainError, _domain_error)
     app.add_exception_handler(RequestValidationError, _request_validation_error)
