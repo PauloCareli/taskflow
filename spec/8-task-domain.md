@@ -35,3 +35,11 @@ None. This slice has no HTTP surface.
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `test_task.py`: `test_ac01_*`; `test_create_and_get_task.py`: `test_ac01_*` | domain, application |
+| AC-02 | `test_task.py`: `test_ac02_*` (length boundaries, past and naive due date, update); `test_create_and_get_task.py`, `test_update_and_delete_task.py`: `test_ac02_*` | domain, application |
+| AC-03 | `test_task.py`: `test_ac03_*` (transition table, same-status no-op); `test_change_status_and_complete.py`: `test_ac03_*` | domain, application |
+| AC-04 | `test_task.py`: `test_ac04_*`; `test_change_status_and_complete.py`: `test_ac04_*` | domain, application |
+| AC-05 | `test_task.py`: `test_ac05_*`; `test_update_and_delete_task.py`, `test_change_status_and_complete.py`, `test_assign_task.py`: `test_ac05_*` | domain, application |
+| AC-06 | `test_task.py`: `test_ac06_*`; `test_create_and_get_task.py`, `test_update_and_delete_task.py`, `test_change_status_and_complete.py`, `test_assign_task.py`: `test_ac06_*` | domain, application |
+| AC-07 | `test_assign_task.py`: `test_ac07_*`; `test_create_and_get_task.py`: `test_ac07_*`; `test_task.py`: `test_ac07_*` | domain, application |
+| AC-08 | `test_list_tasks.py`: `test_ac08_*` (visibility, filters, bounds, sort, pagination, validation, naive filters) | application |
