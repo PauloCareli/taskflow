@@ -70,3 +70,18 @@ Entry format:
 
 **Output:** spec `33fc91e`; red/green pairs `6ca278c`/`f298977` (API client writes and 401 hook), `e05a6bf`/`e62f3e8` (AC-01 to AC-03), `02d115e`/`c769635` (AC-04, AC-05), `86f1112`/`6278a3a` (AC-06 to AC-08), `70c725d`/`62eae5a` (review fixes); `1cc1d51` (AC to test table, README); `16a8086` (corrections)
 **Review notes:** `npm run lint`, `npm run typecheck` and `npm test` green (123 tests, 95.9% line coverage). One independent review; three findings confirmed and fixed (dialog focus on re-render, page clamp after deletes, sign-in failure after register), logged in `docs/ai/corrections.md`. Not verified: layout at 360px and 1280px in a browser, and the app against the real API (mocked with MSW until the backend is merged).
+
+## 2026-11-15 — Task domain and use cases (#8), plan
+**Request:** plan slice `spec/8-task-domain.md` (AC-01 to AC-08) on branch `feat/task-domain`.
+
+**Plan (approved):**
+- **Layers:** `domain` (stdlib only): `TaskStatus`, `User`, `Task` with the rules as methods (create, update, change status, assign, visibility and permission checks, time passed in), and domain errors. `application`: `Protocol` ports `TaskRepository`, `UserRepository`, `UnitOfWork`, `Clock`, `Notifier`; `AssignmentMessage`, `TaskFilters`, `Page`; one use case per operation (create, get, update, delete, assign, change status, complete, list). Infrastructure and api: none. In-memory fakes for all ports in `backend/tests/fakes/`.
+- **Tests, in order:** fakes as test support; domain tests (defaults, validation boundaries, transitions, same-status no-op, `completed_at`, permissions, visibility); use-case tests for create, visibility across every operation, update and delete, status and complete, assign, list.
+- **Edge cases:** failed operations commit and send nothing; the message is sent after commit; not-found is checked before permission; terminal tasks can still be updated by the creator.
+- **Out of scope:** SQLAlchemy, HTTP, JWT, passwords, Celery, notification delivery, overdue flagging.
+- **Risks:** filter, sort and pagination logic is exercised through the fake, so the Postgres repository must meet the same expectations; the `UnitOfWork` shape may be adjusted when infrastructure is built.
+
+**Branch:** `feat/task-domain`
+
+**Output:** red/green pairs `cf0c215`/`f9c83f1` (task rules), `0395c45`/`9b2f7bc` (create, get), `662d121`/`496b93c` (update, delete), `9573c7d`/`ea34db4` (status, complete), `eaa8194`/`24118c8` (assign), `da1947d`/`433e5a3` (list); ports and fakes `6c7ce0d`; refactor `75c72f2`; review fix `2c0bc73`/`8a15121`
+**Review notes:** one independent reviewer. Confirmed and fixed: naive due date filters were not validated. Noted, not changed: aware non-UTC datetimes are accepted as given (conversion belongs at the API boundary); an update with no fields still writes; a notifier failure after commit propagates (delivery is decided with the Celery slice); filter and sort run against the in-memory fake, so the Postgres repository needs the same tests.
