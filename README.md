@@ -42,8 +42,11 @@ Settings come from `TASKAPP_*` environment variables (see `backend/src/taskapp/i
 
 `just check` does not need Docker.
 
+## Using the app
+Open the frontend, create an account on `/register` (or sign in on `/login`), and manage tasks on `/`. The session token is kept in `localStorage` and discarded on logout or when the API answers 401. The API health page is at `/status`.
+
 ## Frontend versions
-React 19.3, Vite 8, TypeScript 6.0, Tailwind 4.3, TanStack Query 5, React Router 7, zod 4, Vitest 5, MSW 3, ESLint 9. ESLint stays on 9 because `eslint-plugin-jsx-a11y` does not support 10 yet, and TypeScript stays on 6.0 because `typescript-eslint` does not support 7 yet. Exact versions are pinned in `frontend/package-lock.json`.
+React 19.3, Vite 8, TypeScript 6.0, Tailwind 4.3, TanStack Query 5, React Router 7, zod 4, React Hook Form, Vitest 5, MSW 3, ESLint 9. ESLint stays on 9 because `eslint-plugin-jsx-a11y` does not support 10 yet, and TypeScript stays on 6.0 because `typescript-eslint` does not support 7 yet. Exact versions are pinned in `frontend/package-lock.json`.
 
 ## Git hooks
 Install once per clone: `cd backend && uv run pre-commit install`. The hooks run ruff, ruff format, mypy and import-linter from the versions pinned in `backend/uv.lock`, plus gitleaks and basic file checks pinned in `.pre-commit-config.yaml`. The ruff hooks fix files in place; `just lint` only checks. Run them on demand with `uv run --project backend pre-commit run --all-files`.

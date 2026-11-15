@@ -51,3 +51,46 @@ Consumed as defined in #9 and #10 and the overview (error body, pagination `{ite
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `test_ac01_a_401_without_a_token_does_not_call_the_unauthorized_handler` (`src/shared/api/httpWrite.test.ts`) | frontend |
+| AC-01 | `test_ac01_a_stored_token_keeps_the_session_after_a_reload` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-01 | `test_ac01_an_anonymous_user_is_redirected_to_login` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-01 | `test_ac01_an_expired_stored_token_is_dropped_and_asks_to_sign_in` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-01 | `test_ac01_registering_signs_the_user_in_and_lands_on_the_task_list` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-01 | `test_ac01_valid_credentials_land_on_the_task_list` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-01 | `test_ac01_wrong_credentials_show_a_generic_error_and_stay_on_the_form` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-02 | `test_ac02_a_401_from_the_api_discards_the_token_and_returns_to_login` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-02 | `test_ac02_a_401_with_a_token_calls_the_unauthorized_handler_and_still_rejects` (`src/shared/api/httpWrite.test.ts`) | frontend |
+| AC-02 | `test_ac02_logout_discards_the_token_and_returns_to_login` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-03 | `test_ac03_a_422_on_register_shows_the_api_message_on_the_form` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-03 | `test_ac03_a_taken_email_on_register_shows_the_api_message_on_the_form` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-03 | `test_ac03_an_invalid_login_form_shows_field_errors_and_sends_nothing` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-03 | `test_ac03_an_invalid_register_form_shows_field_errors_and_sends_nothing` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-04 | `test_ac04_marks_open_past_due_tasks_as_overdue_with_text` (`src/features/tasks/taskList.test.tsx`) | frontend |
+| AC-04 | `test_ac04_shows_an_empty_state_when_there_are_no_tasks` (`src/features/tasks/taskList.test.tsx`) | frontend |
+| AC-04 | `test_ac04_shows_an_error_with_a_retry_that_reloads_the_list` (`src/features/tasks/taskList.test.tsx`) | frontend |
+| AC-04 | `test_ac04_shows_loading_then_the_tasks_with_status_due_date_and_assignee` (`src/features/tasks/taskList.test.tsx`) | frontend |
+| AC-05 | `test_ac05_changing_a_filter_resets_to_page_one` (`src/features/tasks/taskList.test.tsx`) | frontend |
+| AC-05 | `test_ac05_choosing_statuses_requests_the_list_with_those_statuses` (`src/features/tasks/taskList.test.tsx`) | frontend |
+| AC-05 | `test_ac05_due_date_filters_are_sent_as_utc_start_and_end_of_day` (`src/features/tasks/taskList.test.tsx`) | frontend |
+| AC-05 | `test_ac05_next_and_previous_move_between_pages` (`src/features/tasks/taskList.test.tsx`) | frontend |
+| AC-05 | `test_ac05_query_params_repeat_arrays_and_skip_empty_values` (`src/shared/api/httpWrite.test.ts`) | frontend |
+| AC-05 | `test_ac05_the_page_size_defaults_to_25_and_changing_it_resets_to_page_one` (`src/features/tasks/taskList.test.tsx`) | frontend |
+| AC-06 | `test_ac06_a_valid_create_sends_the_task_and_the_list_shows_it` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-06 | `test_ac06_editing_sends_only_changed_fields_and_does_not_reject_a_past_due_date` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-06 | `test_ac06_escape_closes_the_dialog_without_sending_anything` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-06 | `test_ac06_invalid_create_input_shows_field_errors_and_sends_nothing` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-06 | `test_ac06_post_sends_a_json_body_and_the_bearer_token` (`src/shared/api/httpWrite.test.ts`) | frontend |
+| AC-06 | `test_ac06_submitting_twice_quickly_sends_one_request` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-07 | `test_ac07_a_403_shows_an_error_and_the_task_keeps_its_status` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-07 | `test_ac07_a_404_on_an_action_shows_an_error_and_refreshes_the_list` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-07 | `test_ac07_a_409_shows_an_error_and_the_task_keeps_its_status` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-07 | `test_ac07_an_assignee_can_change_status_but_not_edit_delete_or_assign` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-07 | `test_ac07_changing_the_status_updates_the_list_without_a_reload` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-07 | `test_ac07_completing_updates_the_list_and_removes_the_status_controls` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-07 | `test_ac07_patch_and_delete_use_their_methods_and_204_resolves_to_undefined` (`src/shared/api/httpWrite.test.ts`) | frontend |
+| AC-07 | `test_ac07_reassigning_from_the_edit_form_updates_the_assignee` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-07 | `test_ac07_terminal_tasks_offer_no_status_change` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-08 | `test_ac08_a_failed_delete_shows_an_error_and_leaves_the_list_unchanged` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-08 | `test_ac08_confirming_deletes_the_task_and_removes_it_from_the_list` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-08 | `test_ac08_delete_asks_for_confirmation_and_cancel_sends_nothing` (`src/features/tasks/taskActions.test.tsx`) | frontend |
+| AC-08 | `test_ac08_deleting_the_last_item_of_a_later_page_moves_to_the_previous_page` (`src/features/tasks/taskActions.test.tsx`) | frontend |
