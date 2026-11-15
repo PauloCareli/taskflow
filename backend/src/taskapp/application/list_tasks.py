@@ -3,6 +3,7 @@ from uuid import UUID
 from taskapp.application.ports import Page, TaskFilters, UnitOfWork
 from taskapp.domain.errors import ValidationError
 from taskapp.domain.task import Task
+from taskapp.domain.times import check_aware
 
 DEFAULT_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 100
@@ -23,11 +24,10 @@ class ListTasks:
         if page < 1:
             raise ValidationError("page must be at least 1")
         if not 1 <= size <= MAX_PAGE_SIZE:
-            raise ValidationError(f"size must be between 1 and {MAX_PAGE_SIZE}")
+            raise ValidationError(f"size must be at least 1; the maximum size is {MAX_PAGE_SIZE}")
         filters = filters or TaskFilters()
-        for bound in (filters.due_before, filters.due_after):
-            if bound is not None and bound.utcoffset() is None:
-                raise ValidationError("due date filters must be timezone-aware")
+        check_aware(filters.due_before, "due_before")
+        check_aware(filters.due_after, "due_after")
         async with self._uow:
             items, total = await self._uow.tasks.list_visible(
                 actor_id, filters, offset=(page - 1) * size, limit=size

@@ -1,11 +1,13 @@
 import asyncio
 import os
+import secrets
 from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 
 import pytest
 from alembic import command
 from alembic.config import Config
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
@@ -16,9 +18,12 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import NullPool
 
+from taskapp.api.app import create_app
+from taskapp.composition import build_dependencies
 from taskapp.infrastructure.db.session import create_session_factory
-from taskapp.infrastructure.settings import DEFAULT_DATABASE_URL
+from taskapp.infrastructure.settings import DEFAULT_DATABASE_URL, Settings
 
+API_SECRET = secrets.token_urlsafe(32)
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 SERVER_URL = os.environ.get("TASKAPP_DATABASE_URL", DEFAULT_DATABASE_URL)
 
@@ -65,3 +70,15 @@ async def engine(test_database_url: str) -> AsyncIterator[AsyncEngine]:
         await connection.execute(text("TRUNCATE tasks, users CASCADE"))
     yield engine
     await engine.dispose()
+
+
+@pytest.fixture
+async def client(test_database_url: str, engine: AsyncEngine) -> AsyncIterator[AsyncClient]:
+    """The whole app (routes, auth, SQL) on the throwaway database, called in-process."""
+    settings = Settings(database_url=test_database_url, jwt_secret=API_SECRET)  # type: ignore[arg-type]
+    dependencies = build_dependencies(settings)
+    app = create_app(dependencies=dependencies)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield client
+    if dependencies.shutdown:
+        await dependencies.shutdown()

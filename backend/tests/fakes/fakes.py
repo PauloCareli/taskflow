@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from copy import deepcopy
 from datetime import UTC, datetime
 from types import TracebackType
@@ -82,9 +83,17 @@ class InMemoryUserRepository:
     def __init__(self, users: list[User] | None = None) -> None:
         self._users = {u.id: u for u in users or []}
         self._hashes: dict[UUID, str] = {}
+        self.get_many_calls = 0
 
     async def get(self, user_id: UUID) -> User | None:
         return self._users.get(user_id)
+
+    async def get_many(self, user_ids: Collection[UUID]) -> dict[UUID, User]:
+        self.get_many_calls += 1
+        return {uid: self._users[uid] for uid in user_ids if uid in self._users}
+
+    async def list_all(self) -> list[User]:
+        return sorted(self._users.values(), key=lambda u: (u.name.lower(), str(u.id)))
 
     async def get_credentials_by_email(self, email: str) -> Credentials | None:
         for user in self._users.values():

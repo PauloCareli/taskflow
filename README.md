@@ -34,6 +34,16 @@ Settings come from `TASKAPP_*` environment variables or `backend/.env` (see `bac
 | POST | `/auth/register` | `{email, name, password}` -> `201 {id, email, name}`; `409` if the email is taken (any case) |
 | POST | `/auth/login` | `{email, password}` -> `200 {access_token, token_type, expires_in}` (30 minutes); `401` for any bad credentials |
 | GET | `/auth/me` | Bearer token -> `{id, email, name}`; `401` for a missing, malformed, expired or tampered token |
+| GET | `/tasks` | Your tasks (created or assigned): `status` (repeatable), `due_before`, `due_after`, `page`, `size` (default 25, max 100) -> `{items, total, page, size}`, soonest due date first |
+| POST | `/tasks` | `{title, description?, due_date?, assignee_id?}` -> `201 Task` |
+| GET | `/tasks/{id}` | `200 Task`; `404` if it does not exist or is not yours to see |
+| PATCH | `/tasks/{id}` | `{title?, description?, due_date?, status?}`: fields for the creator, `status` also for the assignee; `403`, `404`, `409` invalid transition |
+| DELETE | `/tasks/{id}` | Creator only -> `204` |
+| POST | `/tasks/{id}/assign` | `{assignee_id: uuid \| null}`, creator only; queues an assignment message (logged until the Celery notifier lands) |
+| POST | `/tasks/{id}/complete` | Creator or assignee; `409` if the task is cancelled |
+| GET | `/users` | `[{id, email, name}]` sorted by name, for choosing an assignee |
+
+All `/tasks` and `/users` endpoints need the bearer token from `/auth/login`. Swagger lives at http://localhost:8000/docs (click Authorize and paste the token).
 
 Errors use the body `{"error": {"code", "message", "details"}}`. Passwords are stored as argon2 hashes only.
 

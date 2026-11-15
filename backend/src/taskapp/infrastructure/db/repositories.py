@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from uuid import UUID
 
 from sqlalchemy import ColumnElement, delete, func, or_, select
@@ -10,6 +11,8 @@ from taskapp.domain.status import TaskStatus
 from taskapp.domain.task import Task
 from taskapp.domain.user import User
 from taskapp.infrastructure.db.models import TaskModel, UserModel
+
+_MAX_OFFSET = 2**31
 
 
 def _to_task(model: TaskModel) -> Task:
@@ -90,7 +93,9 @@ class SqlTaskRepository:
             .order_by(
                 TaskModel.due_date.asc().nulls_last(), TaskModel.created_at.desc(), TaskModel.id
             )
-            .offset(offset)
+            # Beyond this many rows the page is empty anyway; the clamp keeps absurd page
+            # numbers from overflowing the database's integer type.
+            .offset(min(offset, _MAX_OFFSET))
             .limit(limit)
         )
         return [_to_task(row) for row in rows], total or 0
@@ -103,6 +108,18 @@ class SqlUserRepository:
     async def get(self, user_id: UUID) -> User | None:
         model = await self._session.get(UserModel, user_id)
         return _to_user(model) if model else None
+
+    async def get_many(self, user_ids: Collection[UUID]) -> dict[UUID, User]:
+        if not user_ids:
+            return {}
+        rows = await self._session.scalars(select(UserModel).where(UserModel.id.in_(user_ids)))
+        return {row.id: _to_user(row) for row in rows}
+
+    async def list_all(self) -> list[User]:
+        rows = await self._session.scalars(
+            select(UserModel).order_by(func.lower(UserModel.name), UserModel.id)
+        )
+        return [_to_user(row) for row in rows]
 
     async def get_credentials_by_email(self, email: str) -> Credentials | None:
         model = await self._session.scalar(

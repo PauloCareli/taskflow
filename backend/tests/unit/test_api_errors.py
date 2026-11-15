@@ -1,9 +1,11 @@
+from datetime import UTC, datetime
+
 from httpx import ASGITransport, AsyncClient
 
 from taskapp.api.app import create_app
 from taskapp.api.dependencies import Dependencies
 from taskapp.application.ports import UnitOfWork
-from tests.fakes import FakePasswordHasher, FakeTokenService
+from tests.fakes import FakePasswordHasher, FakeTokenService, FixedClock, RecordingNotifier
 
 
 def database_down() -> UnitOfWork:
@@ -13,7 +15,11 @@ def database_down() -> UnitOfWork:
 async def test_ac05_an_unexpected_failure_is_a_500_with_the_uniform_body_and_no_internals() -> None:
     app = create_app(
         dependencies=Dependencies(
-            uow_factory=database_down, hasher=FakePasswordHasher(), tokens=FakeTokenService()
+            uow_factory=database_down,
+            hasher=FakePasswordHasher(),
+            tokens=FakeTokenService(),
+            clock=FixedClock(datetime(2026, 1, 15, tzinfo=UTC)),
+            notifier=RecordingNotifier(),
         )
     )
     transport = ASGITransport(app=app, raise_app_exceptions=False)

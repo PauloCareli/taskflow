@@ -4,6 +4,7 @@ from uuid import UUID, uuid4
 
 from taskapp.domain.errors import InvalidTransition, PermissionDenied, ValidationError
 from taskapp.domain.status import TERMINAL_STATUSES, TaskStatus
+from taskapp.domain.times import check_aware
 
 TITLE_MAX = 120
 DESCRIPTION_MAX = 2000
@@ -24,11 +25,6 @@ def _check_title(title: str) -> None:
 def _check_description(description: str | None) -> None:
     if description is not None and len(description) > DESCRIPTION_MAX:
         raise ValidationError(f"description must be at most {DESCRIPTION_MAX} characters")
-
-
-def _check_aware(value: datetime | None, field: str) -> None:
-    if value is not None and (value.tzinfo is None or value.utcoffset() is None):
-        raise ValidationError(f"{field} must be timezone-aware")
 
 
 @dataclass
@@ -57,7 +53,7 @@ class Task:
     ) -> "Task":
         _check_title(title)
         _check_description(description)
-        _check_aware(due_date, "due_date")
+        check_aware(due_date, "due_date")
         if due_date is not None and due_date < now:
             raise ValidationError("due_date must not be in the past")
         return cls(
@@ -86,7 +82,7 @@ class Task:
         if not isinstance(description, Unset):
             _check_description(description)
         if not isinstance(due_date, Unset):
-            _check_aware(due_date, "due_date")
+            check_aware(due_date, "due_date")
         if not isinstance(title, Unset):
             self.title = title
         if not isinstance(description, Unset):

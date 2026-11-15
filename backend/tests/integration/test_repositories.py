@@ -288,3 +288,49 @@ async def test_ac06_listing_runs_the_same_number_of_statements_whatever_the_page
 
     assert small == len(statements)
     assert small <= 3
+
+
+async def test_ac04_get_many_returns_the_users_that_exist_in_one_query(
+    engine: AsyncEngine, session_factory: Factory
+) -> None:
+    alice, bob = await add_users(session_factory, "alice@example.com", "bob@example.com")
+    statements: list[str] = []
+
+    def record(
+        conn: Connection,
+        cursor: object,
+        statement: str,
+        parameters: object,
+        context: object,
+        executemany: bool,
+    ) -> None:
+        statements.append(statement)
+
+    event.listen(engine.sync_engine, "before_cursor_execute", record)
+    async with SqlUnitOfWork(session_factory) as uow:
+        found = await uow.users.get_many({alice.id, bob.id, UUID(int=7)})
+        nothing = await uow.users.get_many(set())
+
+    assert found == {alice.id: alice, bob.id: bob}
+    assert nothing == {}
+    assert len(statements) == 1
+
+
+async def test_ac08_list_all_returns_every_user_sorted_by_name_ignoring_case(
+    session_factory: Factory,
+) -> None:
+    users = [
+        User.create(email="z@example.com", name="zoe"),
+        User.create(email="a@example.com", name="Bruno"),
+        User.create(email="m@example.com", name="alice"),
+    ]
+    uow = SqlUnitOfWork(session_factory)
+    async with uow:
+        for user in users:
+            await uow.users.add(user, "hash")
+        await uow.commit()
+
+    async with SqlUnitOfWork(session_factory) as reader:
+        listed = await reader.users.list_all()
+
+    assert [u.name for u in listed] == ["alice", "Bruno", "zoe"]
