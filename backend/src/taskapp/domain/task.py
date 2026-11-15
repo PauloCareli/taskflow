@@ -9,11 +9,11 @@ TITLE_MAX = 120
 DESCRIPTION_MAX = 2000
 
 
-class _Unset:
+class Unset:
     """Marks a field the caller did not provide, so None can mean "clear it"."""
 
 
-UNSET = _Unset()
+UNSET = Unset()
 
 
 def _check_title(title: str) -> None:
@@ -77,21 +77,21 @@ class Task:
         self,
         *,
         now: datetime,
-        title: str | _Unset = UNSET,
-        description: str | _Unset | None = UNSET,
-        due_date: datetime | _Unset | None = UNSET,
+        title: str | Unset = UNSET,
+        description: str | Unset | None = UNSET,
+        due_date: datetime | Unset | None = UNSET,
     ) -> None:
-        if not isinstance(title, _Unset):
+        if not isinstance(title, Unset):
             _check_title(title)
-        if not isinstance(description, _Unset):
+        if not isinstance(description, Unset):
             _check_description(description)
-        if not isinstance(due_date, _Unset):
+        if not isinstance(due_date, Unset):
             _check_aware(due_date, "due_date")
-        if not isinstance(title, _Unset):
+        if not isinstance(title, Unset):
             self.title = title
-        if not isinstance(description, _Unset):
+        if not isinstance(description, Unset):
             self.description = description
-        if not isinstance(due_date, _Unset):
+        if not isinstance(due_date, Unset):
             self.due_date = due_date
         self.updated_at = now
 
