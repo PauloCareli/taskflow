@@ -15,6 +15,21 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    # Backend integration tests run against a real Postgres (same credentials as docker-compose.yml).
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: taskflow
+          POSTGRES_PASSWORD: taskflow
+          POSTGRES_DB: taskflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U taskflow -d taskflow"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v7
