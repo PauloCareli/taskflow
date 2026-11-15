@@ -20,3 +20,15 @@ class TaskNotFound(DomainError):
 
 class UserNotFound(DomainError):
     """The referenced user does not exist."""
+
+
+class EmailTaken(DomainError):
+    """A user with this email is already registered."""
+
+
+class InvalidCredentials(DomainError):
+    """Email or password is wrong; deliberately does not say which."""
+
+
+class InvalidToken(DomainError):
+    """The access token is missing, malformed, expired or not trusted."""
