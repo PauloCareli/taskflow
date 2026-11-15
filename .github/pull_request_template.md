@@ -14,7 +14,7 @@ Closes #
 - [ ] Tests written first (red -> green commits visible)
 - [ ] Layer boundaries respected (import-linter green)
 - [ ] README updated if commands, env vars, setup or endpoints changed
-- [ ] AC -> test table in docs/spec.md updated
+- [ ] AC -> test table in the slice spec in spec/ updated
 - [ ] `docs/ai/corrections.md` updated for any AI mistakes caught
 
 ## AI notes
