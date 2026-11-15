@@ -1,8 +1,18 @@
 """Composition root: builds the `api` dependencies from `infrastructure` adapters."""
 
 from taskapp.api.dependencies import Dependencies
+from taskapp.infrastructure.db.session import create_engine, create_session_factory
+from taskapp.infrastructure.db.unit_of_work import SqlUnitOfWork
+from taskapp.infrastructure.security import Argon2PasswordHasher, JwtTokenService, SystemClock
 from taskapp.infrastructure.settings import Settings
 
 
 def build_dependencies(settings: Settings) -> Dependencies:
-    raise NotImplementedError
+    engine = create_engine(settings.database_url)
+    session_factory = create_session_factory(engine)
+    return Dependencies(
+        uow_factory=lambda: SqlUnitOfWork(session_factory),
+        hasher=Argon2PasswordHasher(),
+        tokens=JwtTokenService(settings.jwt_secret.get_secret_value(), SystemClock()),
+        shutdown=engine.dispose,
+    )

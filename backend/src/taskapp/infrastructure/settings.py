@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_DATABASE_URL = "postgresql+asyncpg://taskflow:taskflow@localhost:5432/taskflow"
@@ -13,7 +13,8 @@ class Settings(BaseSettings):
     environment: str = "local"
     database_url: str = DEFAULT_DATABASE_URL
     redis_url: str = "redis://localhost:6379/0"
-    jwt_secret: SecretStr = SecretStr("")
+    # Required, no default: the app refuses to start without TASKAPP_JWT_SECRET (32+ characters).
+    jwt_secret: SecretStr = Field(default=..., min_length=32)
 
 
 @lru_cache
