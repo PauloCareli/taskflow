@@ -21,14 +21,15 @@ export function TaskListPage() {
   const [creating, setCreating] = useState(false)
   const [editing, setEditing] = useState<Task | null>(null)
   const [deleting, setDeleting] = useState<Task | null>(null)
-  const itemsOnPage = tasks.data?.items.length ?? 0
+  const total = tasks.data?.total
+  const lastPage = total === undefined ? undefined : Math.max(1, Math.ceil(total / size))
+
+  // A page can disappear (last item deleted here or elsewhere); fall back to the last one.
+  if (lastPage !== undefined && page > lastPage) setPage(lastPage)
 
   function confirmDelete(task: Task) {
     setNotice(null)
     remove.mutate(task.id, {
-      onSuccess: () => {
-        if (itemsOnPage === 1 && page > 1) setPage(page - 1)
-      },
       onError: (error) =>
         setNotice(error instanceof Error ? error.message : 'Could not delete the task'),
       onSettled: () => setDeleting(null),

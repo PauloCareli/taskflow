@@ -13,6 +13,11 @@ const FOCUSABLE =
 export function Dialog({ title, role = 'dialog', onClose, children }: DialogProps) {
   const titleId = useId()
   const panel = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   useEffect(() => {
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -20,7 +25,7 @@ export function Dialog({ title, role = 'dialog', onClose, children }: DialogProp
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
         return
       }
       if (event.key !== 'Tab' || !panel.current) return
@@ -41,7 +46,7 @@ export function Dialog({ title, role = 'dialog', onClose, children }: DialogProp
       document.removeEventListener('keydown', onKeyDown)
       previous?.focus()
     }
-  }, [onClose])
+  }, [])
 
   return (
     <div className="fixed inset-0 z-10 flex items-center justify-center bg-canvas/80 p-4">

@@ -65,6 +65,8 @@ Consumed as defined in #9 and #10 and the overview (error body, pagination `{ite
 | AC-03 | `test_ac03_a_taken_email_on_register_shows_the_api_message_on_the_form` (`src/features/auth/auth.test.tsx`) | frontend |
 | AC-03 | `test_ac03_an_invalid_login_form_shows_field_errors_and_sends_nothing` (`src/features/auth/auth.test.tsx`) | frontend |
 | AC-03 | `test_ac03_an_invalid_register_form_shows_field_errors_and_sends_nothing` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-03 | `test_ac03_when_sign_in_fails_after_a_successful_register_the_user_is_sent_to_login` (`src/features/auth/auth.test.tsx`) | frontend |
+| AC-06 | `test_ac06_a_parent_rerender_with_a_new_onclose_does_not_move_focus`, `test_ac06_closing_returns_focus_to_the_element_that_opened_it`, `test_ac06_tab_wraps_inside_the_dialog_and_escape_calls_onclose` (`src/shared/ui/Dialog.test.tsx`) | frontend |
 | AC-04 | `test_ac04_marks_open_past_due_tasks_as_overdue_with_text` (`src/features/tasks/taskList.test.tsx`) | frontend |
 | AC-04 | `test_ac04_shows_an_empty_state_when_there_are_no_tasks` (`src/features/tasks/taskList.test.tsx`) | frontend |
 | AC-04 | `test_ac04_shows_an_error_with_a_retry_that_reloads_the_list` (`src/features/tasks/taskList.test.tsx`) | frontend |

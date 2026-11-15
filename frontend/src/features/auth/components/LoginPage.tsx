@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { Button } from '../../../shared/ui/Button'
 import { TextField } from '../../../shared/ui/TextField'
 import { useAuth } from '../hooks/AuthContext'
@@ -9,6 +9,8 @@ import { loginSchema, type LoginInput } from '../schemas/authSchemas'
 
 export function LoginPage() {
   const { userId, login } = useAuth()
+  const location = useLocation()
+  const notice = (location.state as { notice?: string } | null)?.notice
   const [formError, setFormError] = useState<string | null>(null)
   const {
     register,
@@ -33,6 +35,11 @@ export function LoginPage() {
         Sign in
       </h1>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+        {notice ? (
+          <p role="status" className="text-sm text-fg-muted">
+            {notice}
+          </p>
+        ) : null}
         {formError ? (
           <p role="alert" className="text-sm text-danger">
             {formError}

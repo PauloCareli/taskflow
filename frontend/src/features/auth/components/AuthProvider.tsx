@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { setTokenProvider, setUnauthorizedHandler } from '../../../shared/api/client'
 import * as authApi from '../api/authApi'
-import { AuthContext, type AuthContextValue } from '../hooks/AuthContext'
+import { AuthContext, SignInAfterRegisterError, type AuthContextValue } from '../hooks/AuthContext'
 import type { LoginInput, RegisterInput } from '../schemas/authSchemas'
 import { decodeToken, isUsable } from '../session'
 import { clearStoredToken, readStoredToken, storeToken } from '../tokenStorage'
@@ -47,7 +47,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login: async (input: LoginInput) => signIn(await authApi.login(input)),
       register: async (input: RegisterInput) => {
         await authApi.register(input)
-        signIn(await authApi.login({ email: input.email, password: input.password }))
+        try {
+          signIn(await authApi.login({ email: input.email, password: input.password }))
+        } catch {
+          throw new SignInAfterRegisterError()
+        }
       },
       logout,
     }),

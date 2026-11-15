@@ -1,14 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Button } from '../../../shared/ui/Button'
 import { TextField } from '../../../shared/ui/TextField'
-import { useAuth } from '../hooks/AuthContext'
+import { SignInAfterRegisterError, useAuth } from '../hooks/AuthContext'
 import { registerSchema, type RegisterInput } from '../schemas/authSchemas'
 
 export function RegisterPage() {
   const { userId, register: signUp } = useAuth()
+  const navigate = useNavigate()
   const [formError, setFormError] = useState<string | null>(null)
   const {
     register,
@@ -23,6 +24,10 @@ export function RegisterPage() {
     try {
       await signUp(input)
     } catch (error) {
+      if (error instanceof SignInAfterRegisterError) {
+        void navigate('/login', { replace: true, state: { notice: error.message } })
+        return
+      }
       setFormError(error instanceof Error ? error.message : 'Could not create the account')
     }
   })

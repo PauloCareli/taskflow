@@ -9,6 +9,14 @@ export type AuthContextValue = {
   logout: () => void
 }
 
+/** The account exists, but the automatic sign-in that followed did not succeed. */
+export class SignInAfterRegisterError extends Error {
+  constructor() {
+    super('Your account was created, but signing in failed. Please sign in.')
+    this.name = 'SignInAfterRegisterError'
+  }
+}
+
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function useAuth(): AuthContextValue {
