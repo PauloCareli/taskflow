@@ -98,11 +98,19 @@ async def test_ac01_every_endpoint_requires_a_valid_token(
         assert_error(response, 401, "invalid_token")
 
 
-async def test_ac01_a_rejected_request_changes_nothing(client: AsyncClient, alice: Person) -> None:
+async def test_ac01_rejected_requests_change_nothing(
+    client: AsyncClient, alice: Person, bob: Person
+) -> None:
+    task = await create(client, alice, assignee_id=bob.id)
     await client.post("/tasks", json={"title": "no token"})
+    await client.patch(f"/tasks/{task['id']}", json={"title": "hijacked"})
+    await client.post(f"/tasks/{task['id']}/assign", json={"assignee_id": None})
+    await client.post(f"/tasks/{task['id']}/complete")
+    await client.delete(f"/tasks/{task['id']}")
 
-    listing = await client.get("/tasks", headers=alice.headers)
-    assert listing.json()["total"] == 0
+    listing = (await client.get("/tasks", headers=alice.headers)).json()
+    assert listing["total"] == 1
+    assert listing["items"] == [task]
 
 
 # --- AC-02: create -----------------------------------------------------------------------
@@ -154,6 +162,8 @@ async def test_ac02_create_accepts_description_due_date_and_assignee(
         {"title": "ok", "due_date": "2020-01-01T00:00:00+00:00"},
         {"title": "ok", "due_date": "2999-01-01T00:00:00"},
         {"title": "ok", "due_date": "not a date"},
+        {"title": "ok", "due_date": 1893456000},
+        {"title": "ok", "due_date": "0001-01-01T00:00:00+05:00"},
         {"title": "ok", "creator_id": str(uuid4())},
         {"title": "ok", "assignee_id": "not-a-uuid"},
         {},
@@ -307,9 +317,32 @@ async def test_ac04_a_size_above_100_is_a_422_that_names_the_maximum(
     assert (await client.get("/tasks?size=100", headers=alice.headers)).status_code == 200
 
 
+async def test_ac04_a_page_far_beyond_the_end_is_an_empty_page_not_an_error(
+    client: AsyncClient, alice: Person
+) -> None:
+    await create(client, alice)
+
+    response = await client.get("/tasks?page=99999999999999999999", headers=alice.headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert (body["items"], body["total"]) == ([], 1)
+
+
 @pytest.mark.parametrize(
     "query",
-    ["size=0", "page=0", "page=abc", "size=abc", "status=bogus", "due_before=2026-01-01T00:00:00"],
+    [
+        "size=0",
+        "page=0",
+        "page=abc",
+        "size=abc",
+        "status=bogus",
+        "status=todo&status=bogus",
+        "due_before=2026-01-01T00:00:00",
+        "due_after=2026-01-01T00:00:00",
+        "due_before=1893456000",
+        "due_after=0001-01-01T00:00:00%2B05:00",
+    ],
 )
 async def test_ac04_invalid_query_values_are_a_422(
     client: AsyncClient, alice: Person, query: str
@@ -419,6 +452,8 @@ async def test_ac05_the_current_status_and_an_empty_body_change_nothing(
         {"title": "x" * 121},
         {"description": "d" * 2001},
         {"due_date": "2999-01-01T00:00:00"},
+        {"due_date": 1893456000},
+        {"due_date": "0001-01-01T00:00:00+05:00"},
         {"status": None},
         {"status": "nonsense"},
         {"assignee_id": str(uuid4())},
