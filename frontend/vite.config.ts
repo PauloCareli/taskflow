@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { loadEnv } from 'vite'
 import { defineConfig } from 'vitest/config'
-import { parseEnv } from './src/shared/api/env'
+import { parseEnv } from './src/shared/api/env.ts'
 
 export default defineConfig(({ mode }) => {
   // Fail fast (dev server and build) when the API base URL is missing or invalid.

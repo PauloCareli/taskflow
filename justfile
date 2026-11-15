@@ -1,6 +1,7 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
 backend := "backend"
+frontend := "frontend"
 
 # List available targets
 default:
@@ -32,5 +33,21 @@ lint:
 typecheck:
     cd {{backend}} && uv run mypy src tests
 
-# Everything CI runs: lint + typecheck + test
-check: lint typecheck test
+# Run the frontend dev server on http://localhost:5173 (proxies /api to the backend)
+fe:
+    cd {{frontend}} && VITE_API_BASE_URL="${VITE_API_BASE_URL:-/api}" npm run dev
+
+# eslint and prettier check
+fe-lint:
+    cd {{frontend}} && npm run lint
+
+# tsc in strict mode
+fe-typecheck:
+    cd {{frontend}} && npm run typecheck
+
+# Frontend tests with coverage (fails under 80%)
+fe-test:
+    cd {{frontend}} && npm test
+
+# Everything CI runs: lint + typecheck + test, backend and frontend
+check: lint typecheck test fe-lint fe-typecheck fe-test
