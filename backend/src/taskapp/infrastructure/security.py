@@ -46,6 +46,13 @@ class JwtTokenService:
         return AccessToken(token=token, expires_in=self._lifetime)
 
     async def verify(self, token: str) -> UUID:
+        return self.user_id_from(token)
+
+    def user_id_from(self, token: str) -> UUID:
+        """The user id in a valid token (signature and expiry checked); `InvalidToken` if not.
+
+        Synchronous and free of I/O, so the rate limiter can use it to key requests.
+        """
         try:
             # Expiry is checked against the injected clock below, not the system clock.
             claims = jwt.decode(

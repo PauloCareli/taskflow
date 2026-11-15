@@ -5,6 +5,7 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from starlette.requests import Request
 
+from taskapp.domain.errors import InvalidToken
 from taskapp.infrastructure.security import JwtTokenService
 
 # slowapi talks to Redis synchronously; never let an unresponsive Redis stall the event loop.
@@ -20,7 +21,13 @@ def user_or_address_key(tokens: JwtTokenService) -> Callable[[Request], str]:
     """
 
     def key(request: Request) -> str:
-        raise NotImplementedError
+        scheme, _, token = request.headers.get("authorization", "").partition(" ")
+        if scheme.lower() == "bearer" and token.strip():
+            try:
+                return f"user:{tokens.user_id_from(token.strip())}"
+            except InvalidToken:
+                pass  # not a token we issued (or expired): treat the request as anonymous
+        return f"ip:{get_remote_address(request)}"
 
     return key
 
