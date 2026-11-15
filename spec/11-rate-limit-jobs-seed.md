@@ -41,6 +41,11 @@ No new endpoints.
 
 | Status | When | Body | Headers |
 |---|---|---|---|
+| 429 | client exceeded the default limit | uniform error body, code `rate_limited` | `Retry-After: <seconds>` |
+
+## AC -> test traceability
+| AC | Test | Layer |
+|---|---|---|
 | AC-01 | `test_ac01_health_is_exempt_from_the_limit` (`tests/integration/test_rate_limit.py`) | api |
 | AC-01 | `test_ac01_requests_over_the_limit_get_429` (`tests/integration/test_rate_limit.py`) | api |
 | AC-02 | `test_ac02_a_429_uses_the_uniform_error_body_and_retry_after` (`tests/integration/test_rate_limit.py`) | api |
@@ -66,8 +71,3 @@ No new endpoints.
 | AC-08 | `test_ac08_postgres_and_redis_start_without_a_profile` (`tests/unit/test_compose_and_just.py`) | compose |
 | AC-08 | `test_ac08_the_api_is_checked_through_health_and_the_worker_through_a_celery_ping` (`tests/unit/test_compose_and_just.py`) | compose |
 | AC-08 | `test_ac08_the_worker_runs_the_celery_app_and_nothing_runs_migrations` (`tests/unit/test_compose_and_just.py`) | compose |
-| 429 | client exceeded the default limit | uniform error body, code `rate_limited` | `Retry-After: <seconds>` |
-
-## AC -> test traceability
-| AC | Test | Layer |
-|---|---|---|

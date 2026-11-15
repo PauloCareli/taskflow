@@ -75,5 +75,5 @@ Entry format:
 **Prompt:**
 > Spec for `spec/11-rate-limit-jobs-seed.md` drafted from issue #11, scoped to the infrastructure half. Decisions: fail-open when Redis is down; `GET /health` exempt; healthchecks via `GET /health` and a Celery ping; settings `TASKAPP_RATE_LIMIT_DEFAULT` and `TASKAPP_CELERY_EAGER`; no migrations in the `full` profile, keep it short and on point. Approved.
 
-**Output:** spec `023bb68`; red/green pairs `059a926`/`8945756` (settings), `760da9e`/`6ca289d` (rate limit), `f432df4`/`97dfe1f` (Celery), `1e01dc0`/(compose and just commit, see log)
+**Output:** spec `023bb68`; red/green pairs `059a926`/`8945756` (settings), `760da9e`/`6ca289d` (rate limit), `f432df4`/`97dfe1f` (Celery), `1e01dc0`/`b324755` (compose, just)
 **Review notes:** `just check` backend gates green (35 tests, 100% coverage; no Redis or worker needed). The `full` profile was started for real: api, worker, postgres and redis all healthy, and 103 requests against the Redis-backed limiter gave 100 x 200 then 429 with `Retry-After: 60` and the uniform body.
