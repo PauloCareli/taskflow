@@ -14,7 +14,10 @@ from taskapp.api.routers import health
 
 def _retry_after_seconds(request: Request, limiter: Limiter) -> int:
     item, args = request.state.view_rate_limit
-    reset_at, _remaining = limiter.limiter.get_window_stats(item, *args)
+    try:
+        reset_at, _remaining = limiter.limiter.get_window_stats(item, *args)
+    except Exception:  # the storage may fail between the check and here
+        return max(1, int(item.get_expiry()))
     return max(1, math.ceil(reset_at - time.time()))
 
 
