@@ -5,7 +5,12 @@ import pytest
 
 from taskapp.application.delete_task import DeleteTask
 from taskapp.application.update_task import UpdateTask
-from taskapp.domain.errors import PermissionDenied, TaskNotFound, ValidationError
+from taskapp.domain.errors import (
+    InvalidTransition,
+    PermissionDenied,
+    TaskNotFound,
+    ValidationError,
+)
 from taskapp.domain.status import TaskStatus
 from taskapp.domain.user import User
 from tests.fakes import FixedClock, InMemoryTaskRepository, InMemoryUnitOfWork
@@ -100,3 +105,79 @@ async def test_ac05_creator_deletes_the_task(
 
     assert await tasks.get(task.id) is None
     assert uow.commits == 1
+
+
+async def test_ac05_creator_updates_fields_and_status_together_in_one_commit(
+    uow: InMemoryUnitOfWork, clock: FixedClock, tasks: InMemoryTaskRepository, alice: User
+) -> None:
+    task = await seed_task(tasks, alice.id)
+
+    updated = await UpdateTask(uow, clock).execute(
+        alice.id, task.id, title="Renamed", status=TaskStatus.IN_PROGRESS
+    )
+
+    assert (updated.title, updated.status) == ("Renamed", TaskStatus.IN_PROGRESS)
+    assert await tasks.get(task.id) == updated
+    assert uow.commits == 1
+
+
+async def test_ac05_the_assignee_can_change_only_the_status(
+    uow: InMemoryUnitOfWork,
+    clock: FixedClock,
+    tasks: InMemoryTaskRepository,
+    alice: User,
+    bob: User,
+) -> None:
+    task = await seed_task(tasks, alice.id, assignee_id=bob.id)
+
+    updated = await UpdateTask(uow, clock).execute(bob.id, task.id, status=TaskStatus.BLOCKED)
+
+    assert updated.status is TaskStatus.BLOCKED
+    assert uow.commits == 1
+
+
+async def test_ac05_an_assignee_request_that_also_touches_fields_changes_nothing(
+    uow: InMemoryUnitOfWork,
+    clock: FixedClock,
+    tasks: InMemoryTaskRepository,
+    alice: User,
+    bob: User,
+) -> None:
+    task = await seed_task(tasks, alice.id, assignee_id=bob.id)
+
+    with pytest.raises(PermissionDenied):
+        await UpdateTask(uow, clock).execute(
+            bob.id, task.id, title="Mine", status=TaskStatus.IN_PROGRESS
+        )
+
+    assert await tasks.get(task.id) == task
+    assert uow.commits == 0
+
+
+async def test_ac05_a_mixed_request_with_an_invalid_transition_changes_nothing(
+    uow: InMemoryUnitOfWork, clock: FixedClock, tasks: InMemoryTaskRepository, alice: User
+) -> None:
+    task = await seed_task(tasks, alice.id, status=TaskStatus.CANCELLED)
+
+    with pytest.raises(InvalidTransition):
+        await UpdateTask(uow, clock).execute(
+            alice.id, task.id, title="Renamed", status=TaskStatus.TODO
+        )
+
+    assert await tasks.get(task.id) == task
+    assert uow.commits == 0
+
+
+async def test_ac05_an_empty_update_and_the_current_status_change_nothing(
+    uow: InMemoryUnitOfWork, clock: FixedClock, tasks: InMemoryTaskRepository, alice: User
+) -> None:
+    task = await seed_task(tasks, alice.id)
+    clock.set(clock.now() + timedelta(hours=1))
+
+    empty = await UpdateTask(uow, clock).execute(alice.id, task.id)
+    same = await UpdateTask(uow, clock).execute(alice.id, task.id, status=TaskStatus.TODO)
+
+    assert empty == task
+    assert same == task
+    assert tasks.writes == 0
+    assert uow.commits == 0

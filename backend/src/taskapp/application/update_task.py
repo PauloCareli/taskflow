@@ -3,6 +3,7 @@ from uuid import UUID
 
 from taskapp.application.access import load_visible_task
 from taskapp.application.ports import Clock, UnitOfWork
+from taskapp.domain.status import TaskStatus
 from taskapp.domain.task import UNSET, Task, Unset
 
 
@@ -19,6 +20,7 @@ class UpdateTask:
         title: str | Unset = UNSET,
         description: str | Unset | None = UNSET,
         due_date: datetime | Unset | None = UNSET,
+        status: TaskStatus | None = None,
     ) -> Task:
         async with self._uow:
             task = await load_visible_task(self._uow, actor_id, task_id)
