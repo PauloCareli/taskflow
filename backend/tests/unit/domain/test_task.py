@@ -142,13 +142,18 @@ def test_ac03_open_statuses_may_move_to_any_other_status(
     assert task.status is target
 
 
-@pytest.mark.parametrize("source", sorted(TERMINAL_STATUSES))
-@pytest.mark.parametrize("target", list(TaskStatus))
+TERMINAL_TO_DIFFERENT = [
+    (source, target)
+    for source in sorted(TERMINAL_STATUSES)
+    for target in TaskStatus
+    if target != source
+]
+
+
+@pytest.mark.parametrize(("source", "target"), TERMINAL_TO_DIFFERENT)
 def test_ac03_terminal_statuses_cannot_change_to_a_different_status(
     source: TaskStatus, target: TaskStatus
 ) -> None:
-    if target == source:
-        pytest.skip("same status is a no-op, covered separately")
     task = make_task(status=source)
 
     with pytest.raises(InvalidTransition):
