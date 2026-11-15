@@ -1,11 +1,24 @@
+import re
 from datetime import datetime
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, BeforeValidator, ConfigDict, model_validator
 
 from taskapp.application.task_views import TaskView
 from taskapp.domain.status import TaskStatus
+
+_NUMBER = re.compile(r"[+-]?\d+(\.\d+)?")
+
+
+def _not_a_number(value: object) -> object:
+    """Dates are ISO 8601 text; a bare number (a Unix timestamp) is not accepted."""
+    if isinstance(value, int | float) or (isinstance(value, str) and _NUMBER.fullmatch(value)):
+        raise ValueError("must be an ISO 8601 date and time, for example 2026-01-31T09:00:00Z")
+    return value
+
+
+IsoDatetime = Annotated[datetime, BeforeValidator(_not_a_number)]
 
 
 class RegisterRequest(BaseModel):
@@ -93,7 +106,7 @@ class CreateTaskRequest(BaseModel):
 
     title: str
     description: str | None = None
-    due_date: datetime | None = None
+    due_date: IsoDatetime | None = None
     assignee_id: UUID | None = None
 
 
@@ -104,7 +117,7 @@ class PatchTaskRequest(BaseModel):
 
     title: str | None = None
     description: str | None = None
-    due_date: datetime | None = None
+    due_date: IsoDatetime | None = None
     status: TaskStatus | None = None
 
     @model_validator(mode="after")

@@ -12,6 +12,8 @@ from taskapp.domain.task import Task
 from taskapp.domain.user import User
 from taskapp.infrastructure.db.models import TaskModel, UserModel
 
+_MAX_OFFSET = 2**31
+
 
 def _to_task(model: TaskModel) -> Task:
     return Task(
@@ -91,7 +93,9 @@ class SqlTaskRepository:
             .order_by(
                 TaskModel.due_date.asc().nulls_last(), TaskModel.created_at.desc(), TaskModel.id
             )
-            .offset(offset)
+            # Beyond this many rows the page is empty anyway; the clamp keeps absurd page
+            # numbers from overflowing the database's integer type.
+            .offset(min(offset, _MAX_OFFSET))
             .limit(limit)
         )
         return [_to_task(row) for row in rows], total or 0

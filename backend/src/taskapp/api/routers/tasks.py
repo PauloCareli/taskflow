@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Annotated, Any
 from uuid import UUID
 
@@ -9,6 +8,7 @@ from taskapp.api.schemas import (
     AssignRequest,
     CreateTaskRequest,
     ErrorResponse,
+    IsoDatetime,
     PatchTaskRequest,
     TaskListResponse,
     TaskResponse,
@@ -56,8 +56,10 @@ async def list_tasks(
     status: Annotated[
         list[TaskStatus] | None, Query(description="Repeat to match any of several statuses")
     ] = None,
-    due_before: Annotated[datetime | None, Query(description="Inclusive, timezone-aware")] = None,
-    due_after: Annotated[datetime | None, Query(description="Inclusive, timezone-aware")] = None,
+    due_before: Annotated[
+        IsoDatetime | None, Query(description="Inclusive, timezone-aware")
+    ] = None,
+    due_after: Annotated[IsoDatetime | None, Query(description="Inclusive, timezone-aware")] = None,
     page: Annotated[int, Query(description="Starts at 1")] = 1,
     size: Annotated[int, Query(description="1 to 100")] = DEFAULT_PAGE_SIZE,
 ) -> TaskListResponse:
