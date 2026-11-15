@@ -73,9 +73,10 @@ describe('home page in the app shell', () => {
     expect(await screen.findByText(/api is healthy/i)).toBeInTheDocument()
   })
 
-  it('test_ac10_the_page_content_cannot_overflow_a_narrow_viewport', () => {
+  it('test_ac10_the_page_content_cannot_overflow_a_narrow_viewport', async () => {
     server.use(http.get(HEALTH, () => HttpResponse.json({ status: 'ok' })))
     renderApp()
+    await screen.findByText(/api is healthy/i)
     expect(screen.getByRole('main').className).toMatch(/\bmin-w-0\b/)
     expect(screen.getByRole('main').className).toMatch(/\bmax-w-/)
   })
