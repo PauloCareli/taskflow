@@ -46,8 +46,10 @@ No new endpoints.
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `test_ac01_forwarded_for_headers_do_not_change_the_client_key` (`tests/integration/test_rate_limit.py`) | api |
 | AC-01 | `test_ac01_health_is_exempt_from_the_limit` (`tests/integration/test_rate_limit.py`) | api |
 | AC-01 | `test_ac01_requests_over_the_limit_get_429` (`tests/integration/test_rate_limit.py`) | api |
+| AC-02 | `test_ac02_a_429_is_still_answered_when_the_storage_fails_afterwards` (`tests/integration/test_rate_limit.py`) | api |
 | AC-02 | `test_ac02_a_429_uses_the_uniform_error_body_and_retry_after` (`tests/integration/test_rate_limit.py`) | api |
 | AC-03 | `test_ac03_a_client_is_served_again_after_the_window_elapsed` (`tests/integration/test_rate_limit.py`) | api |
 | AC-03 | `test_ac03_each_client_ip_has_its_own_budget` (`tests/integration/test_rate_limit.py`) | api |
@@ -56,13 +58,13 @@ No new endpoints.
 | AC-04 | `test_ac04_main_app_applies_the_configured_default_limit` (`tests/integration/test_health.py`) | api |
 | AC-04 | `test_ac04_rate_limit_comes_from_the_environment` (`tests/unit/test_settings.py`) | infrastructure |
 | AC-05 | `test_ac05_requests_are_served_when_the_storage_is_unreachable` (`tests/integration/test_rate_limit.py`) | api |
+| AC-05 | `test_ac05_the_redis_storage_gives_up_quickly_instead_of_hanging_requests` (`tests/integration/test_rate_limit.py`) | api |
 | AC-06 | `test_ac06_celery_eager_can_be_switched_on` (`tests/unit/test_settings.py`) | infrastructure |
 | AC-06 | `test_ac06_celery_runs_tasks_through_the_broker_by_default` (`tests/unit/test_settings.py`) | infrastructure |
 | AC-06 | `test_ac06_creating_the_app_does_not_connect_to_the_broker` (`tests/unit/test_celery_app.py`) | infrastructure |
 | AC-06 | `test_ac06_eager_mode_runs_tasks_in_process_without_a_broker` (`tests/unit/test_celery_app.py`) | infrastructure |
 | AC-06 | `test_ac06_only_json_is_accepted_and_returned` (`tests/unit/test_celery_app.py`) | infrastructure |
 | AC-06 | `test_ac06_the_broker_is_the_configured_redis_url` (`tests/unit/test_celery_app.py`) | infrastructure |
-| AC-06 | `test_ac06_without_eager_mode_tasks_are_sent_to_the_broker` (`tests/unit/test_celery_app.py`) | infrastructure |
 | AC-07 | `test_ac07_just_worker_starts_a_celery_worker_for_the_project_app` (`tests/unit/test_compose_and_just.py`) | compose |
 | AC-07 | `test_ac07_the_worker_entrypoint_module_exposes_the_app` (`tests/unit/test_celery_app.py`) | infrastructure |
 | AC-08 | `test_ac08_api_and_worker_only_start_with_the_full_profile` (`tests/unit/test_compose_and_just.py`) | compose |
