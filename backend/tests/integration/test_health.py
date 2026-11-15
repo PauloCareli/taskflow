@@ -19,3 +19,9 @@ async def test_main_app_serves_health() -> None:
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+async def test_ac04_main_app_applies_the_configured_default_limit() -> None:
+    limits = [str(group.limit) for group in main_app.state.limiter._default_limits]
+
+    assert limits == ["100 per 1 minute"]
