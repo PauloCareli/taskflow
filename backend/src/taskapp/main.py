@@ -10,4 +10,5 @@ app = create_app(
     title=settings.app_name,
     dependencies=build_dependencies(settings),
     limiter=build_limiter(settings.rate_limit_default, settings.redis_url),
+    auth_limit=settings.rate_limit_auth,
 )

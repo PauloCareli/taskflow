@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 from limits import parse
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_DATABASE_URL = "postgresql+asyncpg://taskflow:taskflow@localhost:5432/taskflow"
@@ -28,13 +28,14 @@ class Settings(DatabaseSettings):
     rate_limit_auth: str = "20/minute"
     celery_eager: bool = False
 
-    @field_validator("rate_limit_default")
+    @field_validator("rate_limit_default", "rate_limit_auth")
     @classmethod
-    def _valid_rate_limit(cls, value: str) -> str:
+    def _valid_rate_limit(cls, value: str, info: ValidationInfo) -> str:
         try:
             parse(value)
         except ValueError as error:
-            msg = f"TASKAPP_RATE_LIMIT_DEFAULT must look like '100/minute', got {value!r}"
+            name = f"TASKAPP_{(info.field_name or '').upper()}"
+            msg = f"{name} must look like '100/minute', got {value!r}"
             raise ValueError(msg) from error
         return value
 

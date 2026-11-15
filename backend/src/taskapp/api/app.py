@@ -26,7 +26,7 @@ def create_app(
     app.state.dependencies = dependencies
     install_error_handlers(app)
     app.include_router(health.router)
-    app.include_router(auth.router)
+    app.include_router(auth.build_router(limiter, auth_limit))
     app.include_router(tasks.router)
     app.include_router(users.router)
     if limiter is not None:
