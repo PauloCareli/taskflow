@@ -6,7 +6,7 @@ description: Verify a finished slice, push its branch and open a PR for the user
 Ship the current slice as a pull request. The user reviews and merges manually.
 
 ## Steps
-1. Confirm you are on a `slice/*` branch (never `main`). `git status` and `git log origin/main..HEAD --oneline`: show what will be shipped. Stop if there are unexpected uncommitted changes or `.env` / secrets are staged.
+1. Confirm you are on a `<type>/<name>` branch (never `main`). `git status` and `git log origin/main..HEAD --oneline`: show what will be shipped. Stop if there are unexpected uncommitted changes or `.env` / secrets are staged.
 2. Re-run the full quality gates from `/implement` (backend and/or frontend, whichever changed). Do not ship on red.
 3. Run `gitleaks detect --no-banner` if installed; stop on any finding.
 4. Check docs: README updated if setup/commands/env/endpoints changed; AC -> test table in `docs/spec.md` current; `docs/ai/prompts.md` has this slice's entry with commit hashes; corrections logged.

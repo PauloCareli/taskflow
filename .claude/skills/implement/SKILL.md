@@ -24,11 +24,18 @@ Backend (from `backend/`): `uv run ruff check . && uv run ruff format --check . 
 Frontend (from `frontend/`): `npm run lint && npm run typecheck && npm test -- --run`, plus no `console.error`/`console.warn` in tests.
 If a gate fails, fix the cause; never lower a threshold or add `# type: ignore` / `noqa` to silence it without explaining why.
 
-## Self-review (before reporting done)
-Read the full diff (`git diff main...HEAD` or the slice's commits) and check:
-- Layer boundaries: any import pointing the wrong way? Any business rule outside domain/application?
-- Common AI mistakes: fat routers, ORM models leaking into use cases, deprecated libs (`python-jose`, `passlib`, `datetime.utcnow`), sync calls in async paths, N+1 queries, missing auth/ownership checks, over-broad exception handling, untested error paths, invented APIs.
-- Edge cases from the plan: each has a test.
-- Every AC in the slice has a test named after it, and the AC -> test table in `docs/spec.md` is updated.
-- README updated if commands, env vars, setup or endpoints changed.
-Report findings honestly. For each real mistake found in AI-generated code (yours or earlier), propose a `docs/ai/corrections.md` entry via `/log-correction`.
+## Parallel implementation (only when it is safe)
+Default is sequential: inner layers (domain, then application) feed the outer ones. Dispatch implementer subagents in parallel (Agent tool, one message, multiple calls) ONLY for parts with disjoint files and no shared interface still undecided, e.g. backend api layer vs. frontend screen once the API contract in the plan is fixed, or independent use cases. Each implementer gets: its plan section, the AC ids, the paths it may touch, and the TDD + commit rules above. Never let two agents edit the same file. If agents must share a worktree, they commit sequentially; prefer separate directories.
+
+## Independent review (mandatory, fresh context)
+After the gates pass, dispatch reviewer subagents in parallel, in ONE message. They must be fresh agents (no fork, do not pass the implementation conversation or your reasoning), so they judge the diff cold. Give each only: the diff command (`git diff origin/main...HEAD`), the AC ids and the spec path, and pointers to `AGENTS.md` and the relevant `ENGINEERING.md`. They are read-only: they may run tests and gates but must not edit files.
+- **Architecture reviewer**: layer boundaries, business rules outside domain/application, ORM or Pydantic leaking inward, fat routers, port design, import-linter intent.
+- **Test reviewer**: does each AC have a test named after it, are tests meaningful (not tautological or over-mocked), are error paths and edge cases covered, does the red/green commit history show test-first.
+- **Correctness and security reviewer**: auth and ownership checks, validation, N+1 queries, sync calls in async paths, deprecated libs (`python-jose`, `passlib`, `datetime.utcnow`), swallowed exceptions, timezone handling, secrets.
+- For frontend changes add a **Frontend reviewer**: zod/TS types, server-state vs. local-state, accessibility, console warnings, responsive behavior.
+Ask each for findings as: severity, file:line, the problem, a concrete failure scenario. No praise, no style nitpicks.
+
+## After the review
+- Verify each finding yourself before acting; reviewers can be wrong. Fix confirmed ones test-first (red/green commits), and rerun the gates.
+- Summarize for the user: findings raised, which were confirmed, which were rejected and why.
+- Every confirmed mistake that came from AI-generated code gets a `/log-correction` entry (caught by: review). Also check: README updated if commands, env vars, setup or endpoints changed; AC -> test table in `docs/spec.md` is current.
