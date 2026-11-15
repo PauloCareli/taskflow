@@ -7,7 +7,7 @@ from slowapi import Limiter
 from taskapp.api.dependencies import Dependencies
 from taskapp.api.errors import install_error_handlers
 from taskapp.api.rate_limit import install_rate_limit
-from taskapp.api.routers import auth, health
+from taskapp.api.routers import auth, health, tasks, users
 
 
 def create_app(
@@ -26,6 +26,8 @@ def create_app(
     install_error_handlers(app)
     app.include_router(health.router)
     app.include_router(auth.router)
+    app.include_router(tasks.router)
+    app.include_router(users.router)
     if limiter is not None:
         install_rate_limit(app, limiter)
     return app

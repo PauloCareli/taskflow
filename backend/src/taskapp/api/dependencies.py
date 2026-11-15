@@ -6,7 +6,7 @@ from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from taskapp.application.authenticate_user import AuthenticateUser
-from taskapp.application.ports import PasswordHasher, TokenService, UnitOfWork
+from taskapp.application.ports import Clock, Notifier, PasswordHasher, TokenService, UnitOfWork
 from taskapp.domain.errors import InvalidToken
 from taskapp.domain.user import User
 
@@ -18,6 +18,8 @@ class Dependencies:
     uow_factory: Callable[[], UnitOfWork]
     hasher: PasswordHasher
     tokens: TokenService
+    clock: Clock
+    notifier: Notifier
     shutdown: Callable[[], Awaitable[None]] | None = None
 
 

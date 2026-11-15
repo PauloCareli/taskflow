@@ -1,36 +1,21 @@
 import base64
 import json
-import secrets
-from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import jwt
 import pytest
-from httpx import ASGITransport, AsyncClient, Response
+from httpx import AsyncClient, Response
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from taskapp.api.app import create_app
-from taskapp.composition import build_dependencies
 from taskapp.infrastructure.security import JwtTokenService
-from taskapp.infrastructure.settings import Settings
 from tests.fakes import FixedClock
+from tests.integration.conftest import API_SECRET
 
-SECRET = secrets.token_urlsafe(32)
+SECRET = API_SECRET
 PASSWORD = "s3cret-pass"
 ALICE = {"email": "alice@example.com", "name": "Alice", "password": PASSWORD}
-
-
-@pytest.fixture
-async def client(test_database_url: str, engine: AsyncEngine) -> AsyncIterator[AsyncClient]:
-    settings = Settings(database_url=test_database_url, jwt_secret=SECRET)  # type: ignore[arg-type]
-    dependencies = build_dependencies(settings)
-    app = create_app(dependencies=dependencies)
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        yield client
-    if dependencies.shutdown:
-        await dependencies.shutdown()
 
 
 async def register(client: AsyncClient, **overrides: str) -> Response:
