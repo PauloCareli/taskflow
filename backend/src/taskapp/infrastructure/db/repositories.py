@@ -106,10 +106,16 @@ class SqlUserRepository:
         return _to_user(model) if model else None
 
     async def get_many(self, user_ids: Collection[UUID]) -> dict[UUID, User]:
-        raise NotImplementedError
+        if not user_ids:
+            return {}
+        rows = await self._session.scalars(select(UserModel).where(UserModel.id.in_(user_ids)))
+        return {row.id: _to_user(row) for row in rows}
 
     async def list_all(self) -> list[User]:
-        raise NotImplementedError
+        rows = await self._session.scalars(
+            select(UserModel).order_by(func.lower(UserModel.name), UserModel.id)
+        )
+        return [_to_user(row) for row in rows]
 
     async def get_credentials_by_email(self, email: str) -> Credentials | None:
         model = await self._session.scalar(
