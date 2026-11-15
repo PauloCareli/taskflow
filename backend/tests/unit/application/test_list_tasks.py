@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -164,3 +164,17 @@ async def test_ac08_invalid_page_or_size_is_a_validation_error(
 ) -> None:
     with pytest.raises(ValidationError):
         await ListTasks(uow).execute(alice.id, page=page, size=size)
+
+
+@pytest.mark.parametrize("field", ["due_before", "due_after"])
+async def test_ac08_naive_due_date_filters_are_a_validation_error(
+    uow: InMemoryUnitOfWork, tasks: InMemoryTaskRepository, alice: User, field: str
+) -> None:
+    await seed_task(tasks, alice.id, due_date=NOW + timedelta(days=1))
+    naive = datetime(2026, 1, 20, 12, 0)
+    filters = (
+        TaskFilters(due_before=naive) if field == "due_before" else TaskFilters(due_after=naive)
+    )
+
+    with pytest.raises(ValidationError):
+        await ListTasks(uow).execute(alice.id, filters)
