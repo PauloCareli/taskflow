@@ -7,4 +7,5 @@ class ListUsers:
         self._uow = uow
 
     async def execute(self) -> list[User]:
-        raise NotImplementedError
+        async with self._uow:
+            return await self._uow.users.list_all()

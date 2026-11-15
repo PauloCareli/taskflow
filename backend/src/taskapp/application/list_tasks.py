@@ -23,7 +23,7 @@ class ListTasks:
         if page < 1:
             raise ValidationError("page must be at least 1")
         if not 1 <= size <= MAX_PAGE_SIZE:
-            raise ValidationError(f"size must be between 1 and {MAX_PAGE_SIZE}")
+            raise ValidationError(f"size must be at least 1; the maximum size is {MAX_PAGE_SIZE}")
         filters = filters or TaskFilters()
         for bound in (filters.due_before, filters.due_after):
             if bound is not None and bound.utcoffset() is None:
