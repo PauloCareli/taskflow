@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     environment: str = "local"
     database_url: str = "postgresql+asyncpg://taskflow:taskflow@localhost:5432/taskflow"
     redis_url: str = "redis://localhost:6379/0"
+    rate_limit_default: str = ""
+    celery_eager: bool = True
 
 
 @lru_cache
