@@ -22,8 +22,8 @@ Check it works: `curl localhost:8000/health` returns `{"status":"ok"}`, and the 
 
 The frontend calls the API under `VITE_API_BASE_URL`. `just fe` sets it to `/api` when unset, and the Vite dev server proxies `/api` to `http://localhost:8000`. The value must be an absolute `http(s)` URL or an absolute path; anything else stops the dev server and the build with a clear message. `frontend/.env.example` shows the variable.
 
-The app runs on your machine, not in Docker; compose only provides infrastructure.
-Settings come from `TASKAPP_*` environment variables (see `backend/src/taskapp/infrastructure/settings.py`).
+By default the app runs on your machine and compose only provides Postgres and Redis. To run everything in Docker instead: `docker compose --profile full up --build --wait` starts the API (http://localhost:8000) and a Celery worker next to them. Stop everything with `docker compose --profile full down`.
+Settings come from `TASKAPP_*` environment variables (see `backend/src/taskapp/infrastructure/settings.py`). Two are worth knowing: `TASKAPP_RATE_LIMIT_DEFAULT` (default `100/minute`, per client IP; over the limit the API answers 429 with the usual error body and `Retry-After`; `/health` is exempt and requests are still served if Redis is down) and `TASKAPP_CELERY_EAGER` (run Celery tasks in-process, used by tests).
 
 ## Commands
 | Command | What it does |
@@ -31,6 +31,7 @@ Settings come from `TASKAPP_*` environment variables (see `backend/src/taskapp/i
 | `just up` | Start Postgres and Redis and wait until healthy |
 | `just down` | Stop the infrastructure containers |
 | `just be` | Run the API with auto-reload |
+| `just worker` | Run a Celery worker (needs Redis from `just up`) |
 | `just test` | Run pytest with coverage (fails under 80%) |
 | `just lint` | ruff check, ruff format check and import-linter contracts |
 | `just typecheck` | mypy in strict mode |

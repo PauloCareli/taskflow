@@ -70,3 +70,10 @@ Entry format:
 
 **Output:** spec `33fc91e`; red/green pairs `6ca278c`/`f298977` (API client writes and 401 hook), `e05a6bf`/`e62f3e8` (AC-01 to AC-03), `02d115e`/`c769635` (AC-04, AC-05), `86f1112`/`6278a3a` (AC-06 to AC-08), `70c725d`/`62eae5a` (review fixes); `1cc1d51` (AC to test table, README); `16a8086` (corrections)
 **Review notes:** `npm run lint`, `npm run typecheck` and `npm test` green (123 tests, 95.9% line coverage). One independent review; three findings confirmed and fixed (dialog focus on re-render, page clamp after deletes, sign-in failure after register), logged in `docs/ai/corrections.md`. Not verified: layout at 360px and 1280px in a browser, and the app against the real API (mocked with MSW until the backend is merged).
+
+## 2026-11-15 19:30 — Rate limiting and background jobs, infrastructure half (#11)
+**Prompt:**
+> Spec for `spec/11-rate-limit-jobs-seed.md` drafted from issue #11, scoped to the infrastructure half. Decisions: fail-open when Redis is down; `GET /health` exempt; healthchecks via `GET /health` and a Celery ping; settings `TASKAPP_RATE_LIMIT_DEFAULT` and `TASKAPP_CELERY_EAGER`; no migrations in the `full` profile, keep it short and on point. Approved.
+
+**Output:** spec `023bb68`; red/green pairs `059a926`/`8945756` (settings), `760da9e`/`6ca289d` (rate limit), `f432df4`/`97dfe1f` (Celery), `1e01dc0`/(compose and just commit, see log)
+**Review notes:** `just check` backend gates green (35 tests, 100% coverage; no Redis or worker needed). The `full` profile was started for real: api, worker, postgres and redis all healthy, and 103 requests against the Redis-backed limiter gave 100 x 200 then 429 with `Retry-After: 60` and the uniform body.
