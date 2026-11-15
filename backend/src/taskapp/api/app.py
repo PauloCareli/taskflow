@@ -14,6 +14,7 @@ def create_app(
     title: str = "Taskflow API",
     dependencies: Dependencies | None = None,
     limiter: Limiter | None = None,
+    auth_limit: str | None = None,
 ) -> FastAPI:
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:

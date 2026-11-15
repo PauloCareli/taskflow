@@ -25,6 +25,7 @@ class Settings(DatabaseSettings):
     # Required, no default: the app refuses to start without TASKAPP_JWT_SECRET (32+ characters).
     jwt_secret: SecretStr = Field(default=..., min_length=32)
     rate_limit_default: str = "100/minute"
+    rate_limit_auth: str = "20/minute"
     celery_eager: bool = False
 
     @field_validator("rate_limit_default")
