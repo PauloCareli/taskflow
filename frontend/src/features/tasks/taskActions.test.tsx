@@ -148,7 +148,9 @@ describe('status, complete and permissions', () => {
     const mock = openList([task])
     const card = await item(/move me/i)
     await userEvent.selectOptions(within(card).getByLabelText(/status/i), 'Blocked')
-    await waitFor(() => expect(within(card).getByText('Blocked')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(within(card).getByText('Blocked', { selector: 'span' })).toBeInTheDocument(),
+    )
     expect(writes(mock)).toEqual([`PATCH /tasks/${task.id}`])
   })
 
@@ -157,7 +159,9 @@ describe('status, complete and permissions', () => {
     const mock = openList([task])
     const card = await item(/finish me/i)
     await userEvent.click(within(card).getByRole('button', { name: /complete/i }))
-    await waitFor(() => expect(within(card).getByText('Completed')).toBeInTheDocument())
+    await waitFor(() =>
+      expect(within(card).getByText('Completed', { selector: 'span' })).toBeInTheDocument(),
+    )
     expect(within(card).queryByRole('button', { name: /complete/i })).not.toBeInTheDocument()
     expect(within(card).queryByLabelText(/status/i)).not.toBeInTheDocument()
     expect(writes(mock)).toEqual([`POST /tasks/${task.id}/complete`])
@@ -198,7 +202,9 @@ describe('status, complete and permissions', () => {
     const card = await item(/stuck/i)
     await userEvent.selectOptions(within(card).getByLabelText(/status/i), 'Blocked')
     expect(await screen.findByRole('alert')).toHaveTextContent(/invalid status transition/i)
-    expect(within(await item(/stuck/i)).getByText('To do')).toBeInTheDocument()
+    expect(
+      within(await item(/stuck/i)).getByText('To do', { selector: 'span' }),
+    ).toBeInTheDocument()
   })
 
   it('test_ac07_a_403_shows_an_error_and_the_task_keeps_its_status', async () => {
@@ -210,7 +216,9 @@ describe('status, complete and permissions', () => {
     )
     await userEvent.click(within(await item(/guarded/i)).getByRole('button', { name: /complete/i }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/you cannot do that/i)
-    expect(within(await item(/guarded/i)).getByText('To do')).toBeInTheDocument()
+    expect(
+      within(await item(/guarded/i)).getByText('To do', { selector: 'span' }),
+    ).toBeInTheDocument()
   })
 
   it('test_ac07_a_404_on_an_action_shows_an_error_and_refreshes_the_list', async () => {

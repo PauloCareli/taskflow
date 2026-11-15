@@ -39,3 +39,27 @@ export type TaskFilters = {
   dueBefore: string
 }
 export type TaskQuery = TaskFilters & { page: number; size: number }
+
+export const TITLE_MAX = 120
+export const DESCRIPTION_MAX = 2000
+
+/** Form shape; `dueDate` is a date-only string (YYYY-MM-DD) or empty. */
+export function taskFormSchema(options: { rejectPastDueDate: boolean; today: string }) {
+  return z.object({
+    title: z
+      .string()
+      .trim()
+      .min(1, { error: 'Title is required' })
+      .max(TITLE_MAX, { error: `Title must be ${TITLE_MAX} characters or fewer` }),
+    description: z.string().max(DESCRIPTION_MAX, {
+      error: `Description must be ${DESCRIPTION_MAX} characters or fewer`,
+    }),
+    dueDate: z
+      .string()
+      .refine((value) => !options.rejectPastDueDate || value === '' || value >= options.today, {
+        error: 'Due date cannot be in the past',
+      }),
+    assigneeId: z.string(),
+  })
+}
+export type TaskFormValues = z.infer<ReturnType<typeof taskFormSchema>>

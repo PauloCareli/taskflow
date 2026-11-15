@@ -43,7 +43,7 @@ describe('task list states', () => {
     ])
     expect(await screen.findByRole('status')).toHaveTextContent(/loading tasks/i)
     const item = await screen.findByRole('listitem', { name: /write report/i })
-    expect(within(item).getByText(/in progress/i)).toBeInTheDocument()
+    expect(within(item).getByText(/in progress/i, { selector: 'span' })).toBeInTheDocument()
     expect(within(item).getByText(/mar 5, 2099/i)).toBeInTheDocument()
     expect(within(item).getByText(/bob/i)).toBeInTheDocument()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
