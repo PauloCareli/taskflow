@@ -147,3 +147,17 @@ async def test_ac05_a_token_for_a_user_that_no_longer_exists_is_rejected(
 
     with pytest.raises(InvalidToken):
         await AuthenticateUser(auth_uow, tokens).execute(ghost)
+
+
+async def test_ac04_an_oversized_password_is_refused_without_hashing_it(
+    auth_uow: InMemoryUnitOfWork, hasher: FakePasswordHasher
+) -> None:
+    await register_alice(auth_uow, hasher)
+    hashes_before = (hasher.hash_calls, hasher.verify_calls)
+
+    with pytest.raises(InvalidCredentials):
+        await LoginUser(auth_uow, hasher, FakeTokenService()).execute(
+            email="alice@example.com", password="p" * 129
+        )
+
+    assert (hasher.hash_calls, hasher.verify_calls) == hashes_before

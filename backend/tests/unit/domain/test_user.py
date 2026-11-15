@@ -48,3 +48,15 @@ def test_ac02_passwords_within_bounds_are_accepted(length: int) -> None:
 def test_ac02_passwords_outside_bounds_are_rejected(length: int) -> None:
     with pytest.raises(ValidationError):
         check_password("p" * length)
+
+
+@pytest.mark.parametrize("email", ["a\x00@b.co", "a\x01@b.co", "a@b.co\x00", "a\n@b.co"])
+def test_ac02_emails_with_control_characters_are_rejected(email: str) -> None:
+    with pytest.raises(ValidationError):
+        User.create(email=email, name="Alice")
+
+
+@pytest.mark.parametrize("name", ["Al\x00ice", "Al\nice", "\x07"])
+def test_ac02_names_with_control_characters_are_rejected(name: str) -> None:
+    with pytest.raises(ValidationError):
+        User.create(email="a@b.co", name=name)

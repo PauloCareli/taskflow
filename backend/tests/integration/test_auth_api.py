@@ -247,5 +247,24 @@ async def test_ac05_a_token_for_a_user_that_no_longer_exists_is_a_401(
     assert_uniform_error(response, 401, "invalid_token")
 
 
+@pytest.mark.parametrize("overrides", [{"email": "a\x00b@example.com"}, {"name": "A\x00"}])
+async def test_ac02_registration_with_a_control_character_is_a_422_not_a_server_error(
+    client: AsyncClient, overrides: dict[str, str]
+) -> None:
+    response = await register(client, **overrides)
+
+    assert_uniform_error(response, 422, "validation_error")
+
+
+async def test_ac04_login_with_an_email_that_can_never_exist_gets_the_generic_401(
+    client: AsyncClient,
+) -> None:
+    await register(client)
+
+    response = await login(client, email="alice\x00@example.com")
+
+    assert_uniform_error(response, 401, "invalid_credentials")
+
+
 async def test_health_stays_public(client: AsyncClient) -> None:
     assert (await client.get("/health")).json() == {"status": "ok"}
