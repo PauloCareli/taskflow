@@ -92,7 +92,10 @@ describe('task list filters and paging', () => {
     await screen.findByRole('listitem', { name: /plain todo/i })
     await userEvent.click(screen.getByRole('checkbox', { name: /blocked/i }))
     await userEvent.click(screen.getByRole('checkbox', { name: /in progress/i }))
-    await waitFor(() => expect(lastListCall(mock)).toContain('status=blocked&status=in_progress'))
+    await waitFor(() => {
+      const params = new URLSearchParams(lastListCall(mock).split('?')[1])
+      expect(params.getAll('status').sort()).toEqual(['blocked', 'in_progress'])
+    })
     await waitFor(() =>
       expect(screen.queryByRole('listitem', { name: /plain todo/i })).not.toBeInTheDocument(),
     )
