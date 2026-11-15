@@ -32,3 +32,6 @@ Settings come from `TASKAPP_*` environment variables (see `backend/src/taskapp/i
 | `just check` | `lint` + `typecheck` + `test`; the same checks CI runs |
 
 `just check` does not need Docker.
+
+## Git hooks
+Install once per clone: `cd backend && uv run pre-commit install`. Hooks run ruff, ruff format, mypy, import-linter and gitleaks, using the versions pinned in `backend/uv.lock`, so they match `just check` and CI. Run them on demand with `uv run --project backend pre-commit run --all-files`.
