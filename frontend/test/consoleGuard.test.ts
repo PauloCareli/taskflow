@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { createConsoleGuard } from './consoleGuard'
 
 function fakeConsole() {
-  return { error: () => undefined, warn: () => undefined, log: () => undefined }
+  return {
+    error: (message?: unknown) => void message,
+    warn: (message?: unknown) => void message,
+    log: (message?: unknown) => void message,
+  }
 }
 
 describe('console guard', () => {
