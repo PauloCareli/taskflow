@@ -23,9 +23,9 @@ describe('http client: writes and queries', () => {
         return HttpResponse.json({ id: 1 }, { status: 201 })
       }),
     )
-    await expect(
-      client({ getToken: () => 't0k' }).post('/tasks', { title: 'x' }),
-    ).resolves.toEqual({ id: 1 })
+    await expect(client({ getToken: () => 't0k' }).post('/tasks', { title: 'x' })).resolves.toEqual(
+      { id: 1 },
+    )
     expect(received).toEqual({
       body: { title: 'x' },
       auth: 'Bearer t0k',
