@@ -47,3 +47,11 @@ All errors use the uniform error body from `00-overview`.
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `test_tasks_api.py`: `test_ac01_*` (all eight endpoints, missing and invalid token, nothing changed) | api |
+| AC-02 | `test_tasks_api.py`: `test_ac02_*` (full task, optional fields, invalid input, unknown assignee); `test_update_and_delete_task.py`, `test_task_views_and_users.py`: task views | api, application |
+| AC-03 | `test_tasks_api.py`: `test_ac03_*` (creator and assignee, identical 404, malformed id) | api |
+| AC-04 | `test_tasks_api.py`: `test_ac04_*` (visibility, default page, filters, sort, size limit message, invalid query); `test_repositories.py`: batched user lookup; `test_task_views_and_users.py`: size message | api, application, infrastructure |
+| AC-05 | `test_tasks_api.py`: `test_ac05_*`; `test_update_and_delete_task.py`: `test_ac05_*` (fields and status together, atomic, no-ops) | api, application |
+| AC-06 | `test_tasks_api.py`: `test_ac06_*` | api |
+| AC-07 | `test_tasks_api.py`: `test_ac07_*` (assign, unassign, message, errors, complete); `test_notifier.py` | api, infrastructure |
+| AC-08 | `test_tasks_api.py`: `test_ac08_*` (users, Swagger and bearer scheme); `test_repositories.py`: `test_ac08_*`; `test_task_views_and_users.py`: `test_ac08_*` | api, application, infrastructure |
