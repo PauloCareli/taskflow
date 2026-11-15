@@ -6,7 +6,9 @@ Cross-tool instructions for AI coding agents working in this repo.
 - Spec-driven: `docs/spec.md` is the source of truth (numbered acceptance criteria, AC-xx).
 - TDD: write the failing test first, then the code. Name tests after ACs (`test_ac07_...`).
 - Work in small slices; the human reviews every diff. No giant one-shot commits.
-- Commit straight to `main` with issue refs. Never squash.
+- One GitHub issue per slice (with AC ids). One branch `slice/<name>` and one PR per slice; never push to `main` directly.
+- Merge PRs with a merge commit, never squash: the test-first commit history is evidence.
+- Parallel or dirty checkout? Work in a git worktree under `../taskflow-worktrees/` (see `/feature`).
 
 ## Architecture
 Clean Architecture: `domain` <- `application` <- `infrastructure` / `api`. Boundaries are enforced by import-linter.

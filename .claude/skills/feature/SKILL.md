@@ -17,7 +17,18 @@ Plan a slice. Do NOT write production code or tests in this skill.
    - **Out of scope**: what this slice deliberately does not do.
    - **Risks / assumptions**.
 4. Show the plan and wait for the user's approval or edits. Do not proceed to implementation.
-5. After approval: append the final plan to `docs/ai/prompts.md` under a new dated heading (slice name, the prompt/request, the plan). If a GitHub issue for the slice exists, post a short plan summary as a comment via `gh issue comment`; otherwise offer to create one with the AC ids in the body.
+5. After approval, set up the workspace (see **Branch and worktree** below), then append the final plan to `docs/ai/prompts.md` under a new dated heading (slice name, the prompt/request, the plan). If a GitHub issue for the slice exists, post a short plan summary as a comment via `gh issue comment`; otherwise offer to create one with the AC ids in the body.
+
+## Branch and worktree
+Branch name: `slice/<short-kebab-name>`, created from an up-to-date `main` (`git fetch origin` first).
+Decide where to work:
+- **Current checkout is free** (on `main`, clean tree, no other slice branch in progress): `git switch -c slice/<name> origin/main` and work here.
+- **Current checkout is in use** (uncommitted changes, or already on another `slice/*` branch, or `git worktree list` shows another active slice): create a worktree instead, in a sibling directory:
+  `git worktree add ../taskflow-worktrees/<name> -b slice/<name> origin/main`
+  then tell the user the path to open/`cd` into. Do all further work in that directory.
+- In a new worktree, untracked files do not carry over: run `uv sync` in `backend/` and `npm ci` in `frontend/` as needed, and copy `.env` from the main checkout (never commit it).
+- Ask the user if it is unclear which case applies. Never stash or discard someone's uncommitted work to free the checkout.
+Record the branch (and worktree path, if any) in the prompts.md entry and the issue comment.
 
 ## Rules
 - Plans are short and checkable. No speculative features.
