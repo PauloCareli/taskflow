@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from uuid import UUID
 
 from sqlalchemy import ColumnElement, delete, func, or_, select
@@ -103,6 +104,12 @@ class SqlUserRepository:
     async def get(self, user_id: UUID) -> User | None:
         model = await self._session.get(UserModel, user_id)
         return _to_user(model) if model else None
+
+    async def get_many(self, user_ids: Collection[UUID]) -> dict[UUID, User]:
+        raise NotImplementedError
+
+    async def list_all(self) -> list[User]:
+        raise NotImplementedError
 
     async def get_credentials_by_email(self, email: str) -> Credentials | None:
         model = await self._session.scalar(

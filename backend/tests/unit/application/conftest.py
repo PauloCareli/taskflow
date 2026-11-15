@@ -41,8 +41,13 @@ def tasks() -> InMemoryTaskRepository:
 
 
 @pytest.fixture
-def uow(tasks: InMemoryTaskRepository, alice: User, bob: User, carol: User) -> InMemoryUnitOfWork:
-    return InMemoryUnitOfWork(tasks, InMemoryUserRepository([alice, bob, carol]))
+def users(alice: User, bob: User, carol: User) -> InMemoryUserRepository:
+    return InMemoryUserRepository([alice, bob, carol])
+
+
+@pytest.fixture
+def uow(tasks: InMemoryTaskRepository, users: InMemoryUserRepository) -> InMemoryUnitOfWork:
+    return InMemoryUnitOfWork(tasks, users)
 
 
 @pytest.fixture

@@ -1,3 +1,4 @@
+from collections.abc import Collection
 from dataclasses import dataclass, field
 from datetime import datetime
 from types import TracebackType
@@ -63,6 +64,14 @@ class AccessToken:
 
 class UserRepository(Protocol):
     async def get(self, user_id: UUID) -> User | None: ...
+
+    async def get_many(self, user_ids: Collection[UUID]) -> dict[UUID, User]:
+        """The users that exist among `user_ids`, in one query."""
+        ...
+
+    async def list_all(self) -> list[User]:
+        """Every registered user, sorted by name."""
+        ...
 
     async def get_credentials_by_email(self, email: str) -> Credentials | None:
         """Look a user up by normalized email, together with the stored password hash."""
