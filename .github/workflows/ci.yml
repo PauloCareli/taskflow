@@ -5,6 +5,13 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -21,15 +28,29 @@ jobs:
       - name: Lint, type check and test
         run: just check
 
-  hooks:
+  hygiene:
     runs-on: ubuntu-latest
+    env:
+      # Python tools are covered by `check`; gitleaks has its own job below.
+      SKIP: ruff,ruff-format,mypy,import-linter,gitleaks
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
       - uses: astral-sh/setup-uv@v7
       - name: Install dependencies
         run: uv sync --frozen
         working-directory: backend
-      - name: Run pre-commit hooks (includes gitleaks)
+      - name: Run pre-commit hygiene hooks
         run: uv run --project backend pre-commit run --all-files
+
+  secrets:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
