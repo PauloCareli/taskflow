@@ -22,6 +22,7 @@ async def test_main_app_serves_health() -> None:
 
 
 async def test_ac04_main_app_applies_the_configured_default_limit() -> None:
-    limits = [str(group.limit) for group in main_app.state.limiter._default_limits]
+    groups = main_app.state.limiter._default_limits
+    limits = [str(item.limit) for group in groups for item in group]
 
     assert limits == ["100 per 1 minute"]
