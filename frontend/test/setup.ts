@@ -12,6 +12,7 @@ beforeEach(() => {
 })
 afterEach(() => {
   cleanup()
+  localStorage.clear()
   server.resetHandlers()
   guard.restore()
   guard.assertClean()
