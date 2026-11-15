@@ -23,7 +23,12 @@ def upgrade() -> None:
         sa.Column("email", sa.String(length=254), nullable=False),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("password_hash", sa.String(length=255), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index("uq_users_email_lower", "users", [sa.text("lower(email)")], unique=True)

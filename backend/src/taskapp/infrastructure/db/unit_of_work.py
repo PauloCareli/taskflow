@@ -11,17 +11,27 @@ class SqlUnitOfWork:
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
+        self._session: AsyncSession | None = None
+        self._tasks: SqlTaskRepository | None = None
+        self._users: SqlUserRepository | None = None
 
     @property
     def tasks(self) -> SqlTaskRepository:
-        raise NotImplementedError
+        if self._tasks is None:
+            raise RuntimeError("the unit of work is not active")
+        return self._tasks
 
     @property
     def users(self) -> SqlUserRepository:
-        raise NotImplementedError
+        if self._users is None:
+            raise RuntimeError("the unit of work is not active")
+        return self._users
 
     async def __aenter__(self) -> Self:
-        raise NotImplementedError
+        self._session = self._session_factory()
+        self._tasks = SqlTaskRepository(self._session)
+        self._users = SqlUserRepository(self._session)
+        return self
 
     async def __aexit__(
         self,
@@ -29,7 +39,15 @@ class SqlUnitOfWork:
         exc: BaseException | None,
         tb: TracebackType | None,
     ) -> None:
-        raise NotImplementedError
+        session = self._session
+        self._session = self._tasks = self._users = None
+        if session is not None:
+            try:
+                await session.rollback()  # discards anything that was not committed
+            finally:
+                await session.close()
 
     async def commit(self) -> None:
-        raise NotImplementedError
+        if self._session is None:
+            raise RuntimeError("the unit of work is not active")
+        await self._session.commit()
