@@ -69,18 +69,43 @@ source_modules = ["taskapp.domain"]
 forbidden_modules = [
     "fastapi",
     "starlette",
+    "uvicorn",
     "sqlalchemy",
+    "asyncpg",
+    "alembic",
     "pydantic",
+    "pydantic_core",
     "pydantic_settings",
     "celery",
-    "alembic",
     "redis",
+    "httpx",
+    "requests",
     "jwt",
+    "jose",
     "pwdlib",
+    "passlib",
 ]
 
 [[tool.importlinter.contracts]]
-name = "Application does not depend on frameworks"
+name = "Application does not depend on frameworks or libraries"
 type = "forbidden"
 source_modules = ["taskapp.application"]
-forbidden_modules = ["fastapi", "starlette", "sqlalchemy", "celery", "alembic"]
+forbidden_modules = [
+    "fastapi",
+    "starlette",
+    "uvicorn",
+    "sqlalchemy",
+    "asyncpg",
+    "alembic",
+    "pydantic",
+    "pydantic_core",
+    "pydantic_settings",
+    "celery",
+    "redis",
+    "httpx",
+    "requests",
+    "jwt",
+    "jose",
+    "pwdlib",
+    "passlib",
+]
