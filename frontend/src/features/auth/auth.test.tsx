@@ -146,4 +146,17 @@ describe('auth forms', () => {
     await userEvent.click(screen.getByRole('button', { name: /create account/i }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/password is too weak/i)
   })
+
+  it('test_ac03_when_sign_in_fails_after_a_successful_register_the_user_is_sent_to_login', async () => {
+    const mock = useApi()
+    server.use(http.post(`${API}/auth/login`, () => HttpResponse.json({}, { status: 500 })))
+    renderApp('/register')
+    await userEvent.type(await screen.findByLabelText(/name/i), 'Carol')
+    await userEvent.type(screen.getByLabelText(/email/i), 'carol@example.com')
+    await userEvent.type(screen.getByLabelText(/password/i), 'a-long-password')
+    await userEvent.click(screen.getByRole('button', { name: /create account/i }))
+    expect(await screen.findByRole('heading', { name: /sign in/i })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/account was created/i)
+    expect(mock.calls).toEqual(['POST /auth/register'])
+  })
 })
