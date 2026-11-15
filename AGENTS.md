@@ -21,3 +21,8 @@ Clean Architecture: `domain` <- `application` <- `infrastructure` / `api`. Bound
 
 ## Git authorship
 - Commits and PRs are authored only by the logged-in GitHub user. Never add `Co-Authored-By`, "Generated with Claude" or any AI attribution to commit messages, PR bodies or issues.
+
+## Repository hygiene
+- Everything pushed here is visible to others, including branches, PRs, issues and commit messages. Keep drafts (specs, prompts, docs) local and unpushed until the maintainer has read and approved them.
+- Write repo files as ordinary project documentation. No meta-commentary, no references to the maintainer's machine or local folder layout, and no wording that depends on outside context.
+- Before any push, re-read the full diff for both of the above.
