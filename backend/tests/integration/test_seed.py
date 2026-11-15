@@ -75,7 +75,7 @@ async def test_ac07_seeding_again_adds_and_changes_nothing(
 
 
 async def test_ac07_the_command_says_when_the_data_is_already_there(
-    test_database_url: str,
+    engine: AsyncEngine, test_database_url: str
 ) -> None:
     said: list[str] = []
     settings = SeedSettings(database_url=test_database_url)
