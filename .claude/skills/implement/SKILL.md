@@ -38,4 +38,4 @@ Ask each for findings as: severity, file:line, the problem, a concrete failure s
 ## After the review
 - Verify each finding yourself before acting; reviewers can be wrong. Fix confirmed ones test-first (red/green commits), and rerun the gates.
 - Summarize for the user: findings raised, which were confirmed, which were rejected and why.
-- Every confirmed mistake that came from AI-generated code gets a `/log-correction` entry (caught by: review). Also check: README updated if commands, env vars, setup or endpoints changed; AC -> test table in `docs/spec.md` is current.
+- Every confirmed mistake that came from AI-generated code gets a `/log-correction` entry (caught by: review). Also check: README updated if commands, env vars, setup or endpoints changed; AC -> test table in the slice spec in `spec/` is current.

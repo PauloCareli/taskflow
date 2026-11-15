@@ -7,9 +7,9 @@ args: "<issue number>"
 Start a slice: branch, spec draft, review, spec commit. Do NOT plan, write tests or write code in this skill.
 
 ## Steps
-1. Read the issue (`gh issue view <n>`), `AGENTS.md`, `spec/00-overview.md`, `spec/_template.md`, and the relevant `ENGINEERING.md`. Find the highest AC number already used under `spec/` (`grep -rhoE "AC-[0-9]+" spec | sort -u | tail -1`) and continue from the next one.
+1. Read the issue (`gh issue view <n>`), `AGENTS.md`, `spec/00-overview.md`, `spec/_template.md`, and the relevant `ENGINEERING.md`. AC numbers start at AC-01 in each spec.
 2. Set up the workspace (see **Branch and worktree** below). All further work happens there.
-3. Write the draft to `spec/NN-<slice>.md` (NN = the issue's slice number) from the template: goal, out of scope, ACs in Given/When/Then, edge cases, API contract if any, and an empty AC -> test table.
+3. Write the draft to `spec/NN-<slice>.md` (NN = the GitHub issue number) from the template: goal, out of scope, ACs in Given/When/Then, edge cases, API contract if any, and an empty AC -> test table.
 4. Keep every AC testable and about behavior, not implementation. Cover auth/ownership, validation, boundaries and error cases explicitly. Follow the rules in the overview (statuses, pagination, error format, permissions) instead of inventing new ones.
 5. Add an **Open questions** section for everything the issue and overview do not settle. Never silently decide business rules; ask.
 6. Leave the draft **uncommitted** and tell the user the path. Ask them to review, edit and answer the open questions. Iterate until the user says the spec is approved; never mark it approved yourself.

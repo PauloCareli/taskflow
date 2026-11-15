@@ -3,7 +3,7 @@
 Cross-tool instructions for AI coding agents working in this repo.
 
 ## Workflow
-- Spec-driven: `docs/spec.md` is the source of truth (numbered acceptance criteria, AC-xx).
+- Spec-driven: `spec/` is the source of truth: `spec/00-overview.md` (product-wide rules) plus one spec per issue, each with numbered acceptance criteria (AC-xx) and an AC -> test table.
 - TDD: write the failing test first, then the code. Name tests after ACs (`test_ac07_...`).
 - Work in small slices; the human reviews every diff. No giant one-shot commits.
 - One GitHub issue per slice (with AC ids). One branch `<type>/<name>` (feat, fix, chore, refactor, test, docs; same type as the conventional commit) and one PR per slice; never push to `main` directly.
