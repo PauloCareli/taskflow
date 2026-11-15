@@ -1,0 +1,111 @@
+[project]
+name = "taskapp"
+version = "0.1.0"
+description = "Task management API"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.163.1",
+    "pydantic-settings>=2.16.3",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "ASYNC", "C4", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+strict = true
+python_version = "3.13"
+mypy_path = "src"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "--cov=taskapp --cov-report=term-missing --cov-fail-under=80"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "import-linter>=2.16",
+    "mypy>=2.4.1",
+    "pre-commit>=4.7.0",
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.5.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.5",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/taskapp"]
+
+[tool.importlinter]
+root_package = "taskapp"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Layers: domain <- application <- infrastructure / api"
+type = "layers"
+layers = [
+    "taskapp.api | taskapp.infrastructure",
+    "taskapp.application",
+    "taskapp.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Domain is framework-free"
+type = "forbidden"
+source_modules = ["taskapp.domain"]
+forbidden_modules = [
+    "fastapi",
+    "starlette",
+    "uvicorn",
+    "sqlalchemy",
+    "asyncpg",
+    "alembic",
+    "pydantic",
+    "pydantic_core",
+    "pydantic_settings",
+    "celery",
+    "redis",
+    "httpx",
+    "requests",
+    "jwt",
+    "jose",
+    "pwdlib",
+    "passlib",
+]
+
+[[tool.importlinter.contracts]]
+name = "Application does not depend on frameworks or libraries"
+type = "forbidden"
+source_modules = ["taskapp.application"]
+forbidden_modules = [
+    "fastapi",
+    "starlette",
+    "uvicorn",
+    "sqlalchemy",
+    "asyncpg",
+    "alembic",
+    "pydantic",
+    "pydantic_core",
+    "pydantic_settings",
+    "celery",
+    "redis",
+    "httpx",
+    "requests",
+    "jwt",
+    "jose",
+    "pwdlib",
+    "passlib",
+]
