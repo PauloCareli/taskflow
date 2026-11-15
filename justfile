@@ -19,6 +19,10 @@ down:
 be:
     cd {{backend}} && uv run uvicorn taskapp.main:app --reload
 
+# Apply database migrations (uses TASKAPP_DATABASE_URL, default: the local compose Postgres)
+migrate:
+    cd {{backend}} && uv run alembic upgrade head
+
 # Run a Celery worker (needs Redis: just up)
 worker:
     cd {{backend}} && uv run celery -A taskapp.infrastructure.celery_app worker --loglevel=info

@@ -4,7 +4,13 @@ from types import TracebackType
 from typing import Self
 from uuid import UUID
 
-from taskapp.application.ports import AssignmentMessage, TaskFilters
+from taskapp.application.ports import (
+    AccessToken,
+    AssignmentMessage,
+    Credentials,
+    TaskFilters,
+)
+from taskapp.domain.errors import EmailTaken, InvalidToken
 from taskapp.domain.task import Task
 from taskapp.domain.user import User
 
@@ -75,9 +81,31 @@ def _matches(task: Task, filters: TaskFilters) -> bool:
 class InMemoryUserRepository:
     def __init__(self, users: list[User] | None = None) -> None:
         self._users = {u.id: u for u in users or []}
+        self._hashes: dict[UUID, str] = {}
 
     async def get(self, user_id: UUID) -> User | None:
         return self._users.get(user_id)
+
+    async def get_credentials_by_email(self, email: str) -> Credentials | None:
+        for user in self._users.values():
+            if user.email == email and user.id in self._hashes:
+                return Credentials(user, self._hashes[user.id])
+        return None
+
+    async def add(self, user: User, password_hash: str) -> None:
+        if any(u.email == user.email for u in self._users.values()):
+            raise EmailTaken(user.email)
+        self._users[user.id] = user
+        self._hashes[user.id] = password_hash
+
+    def remove(self, user_id: UUID) -> None:
+        self._users.pop(user_id, None)
+
+    def all(self) -> list[User]:
+        return list(self._users.values())
+
+    def stored_hash(self, user_id: UUID) -> str | None:
+        return self._hashes.get(user_id)
 
 
 class InMemoryUnitOfWork:
@@ -109,3 +137,35 @@ class RecordingNotifier:
 
     async def notify(self, message: AssignmentMessage) -> None:
         self.messages.append(message)
+
+
+class FakePasswordHasher:
+    """Reversible stand-in for argon2; counts calls so tests can see work being done."""
+
+    def __init__(self) -> None:
+        self.hash_calls = 0
+        self.verify_calls = 0
+
+    async def hash(self, password: str) -> str:
+        self.hash_calls += 1
+        return f"hashed:{password}"
+
+    async def verify(self, password: str, password_hash: str) -> bool:
+        self.verify_calls += 1
+        return password_hash == f"hashed:{password}"
+
+
+class FakeTokenService:
+    def __init__(self) -> None:
+        self._tokens: dict[str, UUID] = {}
+
+    async def issue(self, user_id: UUID) -> AccessToken:
+        token = f"token-{len(self._tokens)}"
+        self._tokens[token] = user_id
+        return AccessToken(token=token, expires_in=1800)
+
+    async def verify(self, token: str) -> UUID:
+        try:
+            return self._tokens[token]
+        except KeyError:
+            raise InvalidToken from None

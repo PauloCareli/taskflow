@@ -49,8 +49,28 @@ class TaskRepository(Protocol):
         ...
 
 
+@dataclass(frozen=True)
+class Credentials:
+    user: User
+    password_hash: str
+
+
+@dataclass(frozen=True)
+class AccessToken:
+    token: str
+    expires_in: int
+
+
 class UserRepository(Protocol):
     async def get(self, user_id: UUID) -> User | None: ...
+
+    async def get_credentials_by_email(self, email: str) -> Credentials | None:
+        """Look a user up by normalized email, together with the stored password hash."""
+        ...
+
+    async def add(self, user: User, password_hash: str) -> None:
+        """Store a user. Raises `EmailTaken` if the email is already registered."""
+        ...
 
 
 class UnitOfWork(Protocol):
@@ -78,3 +98,17 @@ class Clock(Protocol):
 
 class Notifier(Protocol):
     async def notify(self, message: AssignmentMessage) -> None: ...
+
+
+class PasswordHasher(Protocol):
+    async def hash(self, password: str) -> str: ...
+
+    async def verify(self, password: str, password_hash: str) -> bool: ...
+
+
+class TokenService(Protocol):
+    async def issue(self, user_id: UUID) -> AccessToken: ...
+
+    async def verify(self, token: str) -> UUID:
+        """Return the user id in a valid token; raise `InvalidToken` otherwise."""
+        ...

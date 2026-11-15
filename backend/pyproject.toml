@@ -4,10 +4,15 @@ version = "0.1.0"
 description = "Task management API"
 requires-python = ">=3.13"
 dependencies = [
+    "alembic>=1.20.1",
+    "asyncpg>=0.32.0",
     "celery[redis]>=5.7.0",
     "fastapi>=0.163.1",
+    "pwdlib[argon2]>=0.4.2",
     "pydantic-settings>=2.16.3",
+    "pyjwt>=2.15.1",
     "slowapi>=0.1.10",
+    "sqlalchemy[asyncio]>=2.1.8",
     "uvicorn[standard]>=0.54.0",
 ]
 
@@ -19,7 +24,7 @@ src = ["src", "tests"]
 select = ["E", "F", "I", "B", "UP", "S", "ASYNC", "C4", "SIM", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]
+"tests/**" = ["S101", "S105", "S106"]
 
 [tool.mypy]
 strict = true

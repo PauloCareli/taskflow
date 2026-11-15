@@ -17,17 +17,17 @@ NOW = datetime(2026, 1, 15, 12, 0, tzinfo=UTC)
 
 @pytest.fixture
 def alice() -> User:
-    return User(id=uuid4(), email="alice@example.com")
+    return User(id=uuid4(), email="alice@example.com", name="alice")
 
 
 @pytest.fixture
 def bob() -> User:
-    return User(id=uuid4(), email="bob@example.com")
+    return User(id=uuid4(), email="bob@example.com", name="bob")
 
 
 @pytest.fixture
 def carol() -> User:
-    return User(id=uuid4(), email="carol@example.com")
+    return User(id=uuid4(), email="carol@example.com", name="carol")
 
 
 @pytest.fixture
