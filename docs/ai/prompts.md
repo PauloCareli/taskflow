@@ -120,3 +120,10 @@ Entry format:
 
 **Output:** spec `7eabb55`; red/green `f327230`/`fe4a463` (AC-01 to AC-10), `0b02157` and the fix commit after it (review findings)
 **Review notes:** frontend gates green (148 tests, 95% line coverage). One independent review; confirmed findings fixed with tests and logged in `docs/ai/corrections.md`. Known and left: the status menu inside a very short modal can scroll inside the dialog; layout at 360px and 1280px was not checked in a browser.
+
+## 2026-11-16 — Documentation and release readiness (#13)
+**Prompt:**
+> Spec for `spec/13-documentation-release.md` drafted from issue #13; the open questions (clean clone on its own containers and an empty database, usage figures not recorded with a rough estimate, delete the stale `docs/spec.md`, any browser tool for the console check, the README as the single reference, guard tests for the README, the demo credentials not flagged by the secret scan, both coverage figures) were answered and the spec approved before any change.
+
+**Output:** spec `8269b10`; red/green pairs `59fe04c`/`b527dec` (configurable compose ports), `4af8b94`/`0273e77` (README guards and the rewritten README, usage page, stale spec removed), `cabc847`/`cccc4dc` (a missing setting points to the README), `d778148`/`175f459` (favicon)
+**Review notes:** the verification is recorded in the spec: a fresh clone followed the README literally on its own containers and an empty database (quick start, `just check`, the Docker route, a worker delivering a real notification), the full-history secret scan was clean, and headless Chrome drove the main flows at 1280px and 360px. The browser run found one defect the unit tests could not see: the page had no favicon, so every load logged a 404 in the console. Production npm dependencies have no known vulnerabilities; the 7 moderate findings are in development tooling only.

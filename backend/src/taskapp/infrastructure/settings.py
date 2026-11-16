@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 from limits import parse
-from pydantic import Field, SecretStr, ValidationInfo, field_validator
+from pydantic import Field, SecretStr, ValidationError, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_DATABASE_URL = "postgresql+asyncpg://taskflow:taskflow@localhost:5432/taskflow"
@@ -42,4 +42,14 @@ class Settings(DatabaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    try:
+        return Settings()
+    except ValidationError as error:
+        problems = "; ".join(
+            f"TASKAPP_{'_'.join(str(part) for part in problem['loc']).upper()}: {problem['msg']}"
+            for problem in error.errors()
+        )
+        raise SystemExit(
+            f"The settings are not valid ({problems}). Create backend/.env from "
+            "backend/.env.example, and see the Configuration section of the README."
+        ) from error
