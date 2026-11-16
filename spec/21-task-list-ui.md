@@ -51,3 +51,30 @@ No new endpoints. The user's name and email come from `GET /users` (already used
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `test_ac01_a_task_without_a_description_has_no_description_line` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-01 | `test_ac01_the_description_is_one_truncated_line_below_the_due_date_with_a_tooltip` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-01 | `test_ac01_the_tooltip_also_opens_on_keyboard_focus_and_closes_with_escape` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-02 | `test_ac02_the_status_and_overdue_tags_come_below_the_description` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-03 | `test_ac03_clicking_outside_closes_the_menu_and_opening_another_closes_the_first` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-03 | `test_ac03_escape_in_a_menu_inside_the_modal_closes_only_the_menu` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-03 | `test_ac03_tab_closes_the_menu` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-03 | `test_ac03_the_creator_has_view_edit_and_delete_in_the_menu_and_complete_beside_it` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-03 | `test_ac03_the_menu_closes_after_choosing_an_action` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-03 | `test_ac03_the_menu_opens_with_the_keyboard_moves_with_arrows_and_escape_returns_focus` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-05 | `test_ac05_choosing_a_status_updates_the_tag` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-05 | `test_ac05_the_status_trigger_keeps_focus_and_a_36px_target_while_a_change_is_in_flight` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-05 | `test_ac05_the_tag_is_static_without_a_caret_when_the_status_cannot_change` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-05 | `test_ac05_the_tag_shows_a_caret_and_lists_the_other_statuses_except_completed` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-06 | `test_ac06_a_task_that_no_longer_exists_closes_the_modal_with_a_message` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-06 | `test_ac06_clicking_the_title_opens_the_view_and_escape_and_outside_clicks_close_it` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-06 | `test_ac06_the_modal_stays_open_when_the_task_leaves_the_filtered_list` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-06 | `test_ac06_view_from_the_menu_shows_the_task_read_only_and_x_closes_it` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-07 | `test_ac07_the_modal_changes_status_and_completes_and_the_list_behind_follows` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-07 | `test_ac07_the_modal_status_is_static_when_the_user_cannot_change_it` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-08 | `test_ac08_filters_are_grouped_in_one_card_named_filters` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-09 | `test_ac09_clear_filters_is_disabled_until_a_filter_is_set_then_resets_filters_and_page` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-10 | `test_ac10_the_header_falls_back_to_the_email_when_the_name_is_empty` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-10 | `test_ac10_the_header_shows_only_log_out_when_the_user_cannot_be_found` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-10 | `test_ac10_the_header_shows_the_user_name_on_the_right` (`src/features/tasks/taskCardUi.test.tsx`) | frontend |
+| AC-04 | `test_ac06_editing_sends_only_changed_fields_and_does_not_reject_a_past_due_date`, `test_ac08_confirming_deletes_the_task_and_removes_it_from_the_list` (`src/features/tasks/taskActions.test.tsx`, now through the menu) | frontend |
+| AC-06/07 | `src/shared/ui/Dialog.test.tsx` covers focus return and Escape for the shared dialog | frontend |
