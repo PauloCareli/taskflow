@@ -11,7 +11,7 @@ from taskapp.seed import DEMO_PASSWORD, DEMO_USERS
 ROOT = Path(__file__).resolve().parents[3]
 README = (ROOT / "README.md").read_text()
 # Paths the README tells the reader to create themselves.
-CREATED_BY_THE_READER = {"backend/.env"}
+CREATED_BY_THE_READER = {"backend/.env", "backend/.local-jwt-secret"}
 PATH_ROOTS = ("backend/", "frontend/", "spec/", "docs/", ".github/", "justfile", "docker-compose")
 
 

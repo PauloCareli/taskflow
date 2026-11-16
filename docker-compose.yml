@@ -47,8 +47,13 @@ services:
     environment: &app-env
       TASKAPP_DATABASE_URL: postgresql+asyncpg://taskflow:taskflow@postgres:5432/taskflow
       TASKAPP_REDIS_URL: redis://redis:6379/0
-      # Passed through from your shell or a root `.env`; the API refuses to start if it is empty.
+      # Optional: passed through from your shell or a root `.env`. When it is empty, the API
+      # (TASKAPP_ENVIRONMENT defaults to local) generates a signing secret and keeps it in the
+      # file below, on the `api_data` volume, so people stay signed in across restarts.
       TASKAPP_JWT_SECRET: ${TASKAPP_JWT_SECRET:-}
+      TASKAPP_JWT_SECRET_FILE: /data/jwt-secret
+    volumes:
+      - api_data:/data
     depends_on: &app-deps
       postgres:
         condition: service_healthy
@@ -120,3 +125,4 @@ services:
 
 volumes:
   postgres_data:
+  api_data:

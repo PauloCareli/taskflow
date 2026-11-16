@@ -24,7 +24,7 @@ from taskapp.infrastructure.db.models import TaskModel, UserModel
 from taskapp.infrastructure.db.session import create_engine, create_session_factory
 from taskapp.infrastructure.db.unit_of_work import SqlUnitOfWork
 from taskapp.infrastructure.security import Argon2PasswordHasher, SystemClock
-from taskapp.infrastructure.settings import DatabaseSettings
+from taskapp.infrastructure.settings import LOCAL_ENVIRONMENTS, DatabaseSettings
 
 DEMO_PASSWORD = "password123"  # noqa: S105 (documented demo credential, not a secret)
 DEMO_USERS = (
@@ -52,10 +52,6 @@ _TASKS: tuple[tuple[int, str, TaskStatus, int | None, int | None], ...] = (
     (1, "Evaluate the second analytics vendor", TaskStatus.CANCELLED, -4, 0),
     (2, "Collect ideas for the next sprint", TaskStatus.TODO, None, None),
 )
-
-
-# Demo users have a published password, so seeding is an allowlist, not a production blocklist.
-_LOCAL_ENVIRONMENTS = frozenset({"local", "dev", "development", "test"})
 
 
 class SeedSettings(DatabaseSettings):
@@ -136,10 +132,10 @@ async def _remove(engine: AsyncEngine, user_ids: list[UUID]) -> None:
 async def run(settings: SeedSettings, say: Callable[[str], None] = print) -> int:
     """Run the seed; returns the process exit code."""
     environment = settings.environment.strip().lower()
-    if environment not in _LOCAL_ENVIRONMENTS:
+    if environment not in LOCAL_ENVIRONMENTS:
         say(
             f"Refusing to seed: TASKAPP_ENVIRONMENT is {settings.environment!r}, and demo data "
-            f"is only loaded for {', '.join(sorted(_LOCAL_ENVIRONMENTS))}. Nothing was changed."
+            f"is only loaded for {', '.join(sorted(LOCAL_ENVIRONMENTS))}. Nothing was changed."
         )
         return 1
     if await seed(settings.database_url) is SeedOutcome.ALREADY_SEEDED:

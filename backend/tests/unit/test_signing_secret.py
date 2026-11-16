@@ -106,6 +106,7 @@ def test_ac02_starting_twice_logs_no_warning_the_second_time(
     secret_file: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
     Settings(jwt_secret_file=secret_file).signing_secret()
+    caplog.clear()  # the first start warned; only the second start is under test
 
     with caplog.at_level(logging.INFO, logger=LOGGER):
         Settings(jwt_secret_file=secret_file).signing_secret()
