@@ -231,6 +231,63 @@ describe('view modal', () => {
   })
 })
 
+describe('menus and modal edge cases', () => {
+  it('test_ac06_the_modal_stays_open_when_the_task_leaves_the_filtered_list', async () => {
+    openList([makeTask({ title: 'Filtered out' }), makeTask({ title: 'Other', status: 'blocked' })])
+    await userEvent.click(await screen.findByRole('checkbox', { name: /^to do$/i }))
+    await waitFor(() =>
+      expect(screen.queryByRole('listitem', { name: 'Other' })).not.toBeInTheDocument(),
+    )
+    await userEvent.click(await screen.findByRole('button', { name: 'Filtered out' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Filtered out' })
+    await userEvent.click(within(dialog).getByRole('button', { name: /^complete/i }))
+    await waitFor(() =>
+      expect(screen.queryByRole('listitem', { name: 'Filtered out' })).not.toBeInTheDocument(),
+    )
+    expect(
+      await within(screen.getByRole('dialog')).findByText('Completed', { selector: 'span' }),
+    ).toBeInTheDocument()
+  })
+
+  it('test_ac06_a_task_that_no_longer_exists_closes_the_modal_with_a_message', async () => {
+    const mock = openList([makeTask({ title: 'Gone soon' })])
+    await userEvent.click(await screen.findByRole('button', { name: 'Gone soon' }))
+    await screen.findByRole('dialog', { name: 'Gone soon' })
+    mock.tasks.splice(0, 1)
+    await userEvent.click(screen.getByRole('button', { name: /^complete/i }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(await screen.findByRole('alert')).toHaveTextContent(/not found/i)
+  })
+
+  it('test_ac03_tab_closes_the_menu', async () => {
+    openList([makeTask({ title: 'Tabbing' })])
+    await openActions(await card('Tabbing'))
+    await userEvent.tab()
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
+
+  it('test_ac03_escape_in_a_menu_inside_the_modal_closes_only_the_menu', async () => {
+    openList([makeTask({ title: 'Nested' })])
+    await userEvent.click(await screen.findByRole('button', { name: 'Nested' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Nested' })
+    await userEvent.click(within(dialog).getByRole('button', { name: /change status/i }))
+    await screen.findByRole('menu')
+    await userEvent.keyboard('{Escape}')
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Nested' })).toBeInTheDocument()
+  })
+
+  it('test_ac05_the_status_trigger_keeps_focus_and_a_44px_target_while_a_change_is_in_flight', async () => {
+    openList([makeTask({ title: 'Focus stays' })])
+    const item = await card('Focus stays')
+    await chooseStatus(item, 'Blocked')
+    const trigger = within(item).getByRole('button', { name: /change status/i })
+    expect(trigger).toBeEnabled()
+    expect(trigger.className).toMatch(/\bmin-h-9\b/)
+    expect(trigger).toHaveFocus()
+  })
+})
+
 describe('filters card and header', () => {
   it('test_ac08_filters_are_grouped_in_one_card_named_filters', async () => {
     openList([])

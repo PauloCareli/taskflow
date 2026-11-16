@@ -144,6 +144,14 @@ export function createApiMock(initial: { users?: MockUser[]; tasks?: MockTask[] 
       const items = matching.slice((page - 1) * size, page * size)
       return HttpResponse.json({ items, total: matching.length, page, size })
     }),
+    http.get(`${API}/tasks/:id`, ({ request, params }) => {
+      calls.push(`GET /tasks/${String(params['id'])}`)
+      const user = userFrom(request)
+      if (!user) return unauthorized()
+      const task = tasks.find((candidate) => candidate.id === params['id'])
+      if (!task || !visible(task, user)) return error(404, 'not_found', 'Task not found')
+      return HttpResponse.json(task)
+    }),
     http.post(`${API}/tasks`, async ({ request }) => {
       calls.push('POST /tasks')
       const user = userFrom(request)
