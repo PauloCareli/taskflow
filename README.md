@@ -18,7 +18,7 @@ Tested on macOS and Linux. Windows is not supported (use WSL).
 
 ### Run it
 ```bash
-git clone <repository-url> taskflow && cd taskflow
+git clone https://github.com/PauloCareli/taskflow.git && cd taskflow
 
 # 1. Configuration: a signing secret for access tokens (at least 32 random characters)
 cp backend/.env.example backend/.env
