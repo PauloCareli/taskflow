@@ -127,3 +127,17 @@ Entry format:
 
 **Output:** spec `8269b10`; red/green pairs `59fe04c`/`b527dec` (configurable compose ports), `4af8b94`/`0273e77` (README guards and the rewritten README, usage page, stale spec removed), `cabc847`/`cccc4dc` (a missing setting points to the README), `d778148`/`175f459` (favicon)
 **Review notes:** the verification is recorded in the spec: a fresh clone followed the README literally on its own containers and an empty database (quick start, `just check`, the Docker route, a worker delivering a real notification), the full-history secret scan was clean, and headless Chrome drove the main flows at 1280px and 360px. The browser run found one defect the unit tests could not see: the page had no favicon, so every load logged a 404 in the console. Production npm dependencies have no known vulnerabilities; the 7 moderate findings are in development tooling only.
+
+## 2026-11-16 — Docker stack (#22)
+**Prompt:**
+> Spec for `spec/22-docker-stack.md` drafted from issue #22 after the request to run the frontend in Docker as well, with the choice of starting only the backend or only the frontend. The open questions (profiles `api`, `web` and `full` with seed on demand, `WEB_PORT=8080`, a separate one-shot migration service, Vite's preview server instead of nginx, a CI build only when Docker files change, implementation after the documentation pull request) were answered and the spec approved before any change.
+
+**Output:** spec `3e10ac3`; red/green `d5443e4`/`ee433f5` (profiles, services, images, workflow, README coverage), `c9a4dee`/`0cd885e` (the web container could not start as a non-root user), chore `709e509` (image size)
+**Review notes:** each route was run from nothing on separate ports and its own Compose project (backend only, frontend only against an API on the host, everything), then the main browser flows were driven through the web container. Running it found three things the structural tests could not: the web container failed to start as a non-root user, the first web image carried a 160 MB npm cache, and the spec's claim that the `web` profile alone starts only the web container was wrong, because Compose also starts services that have no profile.
+
+## 2026-11-16 — Local signing secret (#26)
+**Prompt:**
+> After the Docker stack, the question was why the API needs a signing secret to start when it is only used after sign-in, and whether `docker compose up` could just work. A spec (`spec/26-local-signing-secret.md`) was drafted for generating a secret in local environments only; the answers were: the same list of local environments as the seed, an empty value counts as unset, staging and production still refuse to start, people must stay signed in across restarts (so the generated secret is kept in a git-ignored file), and the work belongs in the Docker pull request because it fixes its first-run experience.
+
+**Output:** spec `c6ecc5d`, `2e62015`; red `e82010f`; green `23d24f9`; polish `91e1a83` (absolute path in the warning)
+**Review notes:** the behavior was verified for real, locally and in Docker, with no secret set anywhere: the file is created for its owner only, a restart keeps tokens valid, deleting the file signs everyone out, production refuses to start, and `restart`, `down` and `up` keep the Docker volume. One correction to the first idea is in the spec: a page reload never signs anyone out (the access token is in the browser's local storage), only an API restart does, and the secret itself must never go to the browser.

@@ -15,7 +15,7 @@ from taskapp.infrastructure.tasks import register_tasks
 
 def build_app_limiter(settings: Settings) -> Limiter:
     """The default limit, counted per signed-in user and per address for anonymous requests."""
-    tokens = JwtTokenService(settings.jwt_secret.get_secret_value(), SystemClock())
+    tokens = JwtTokenService(settings.signing_secret(), SystemClock())
     return build_limiter(
         settings.rate_limit_default,
         settings.redis_url,
@@ -30,7 +30,7 @@ def build_dependencies(settings: Settings) -> Dependencies:
     return Dependencies(
         uow_factory=lambda: SqlUnitOfWork(session_factory),
         hasher=Argon2PasswordHasher(),
-        tokens=JwtTokenService(settings.jwt_secret.get_secret_value(), clock),
+        tokens=JwtTokenService(settings.signing_secret(), clock),
         clock=clock,
         notifier=CeleryNotifier(register_tasks(create_celery_app(settings, publisher=True))),
         shutdown=engine.dispose,

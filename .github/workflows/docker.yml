@@ -1,0 +1,37 @@
+name: Docker build
+
+# Builds both images when something that goes into them changes, so a broken Dockerfile
+# is caught in the pull request and not by the next person who runs `docker compose up`.
+on:
+  pull_request:
+    paths:
+      - docker-compose.yml
+      - backend/Dockerfile
+      - backend/.dockerignore
+      - backend/pyproject.toml
+      - backend/uv.lock
+      - backend/alembic.ini
+      - backend/migrations/**
+      - frontend/Dockerfile
+      - frontend/.dockerignore
+      - frontend/package.json
+      - frontend/package-lock.json
+      - frontend/vite.preview.config.js
+      - .github/workflows/docker.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate the compose file
+        run: TASKAPP_JWT_SECRET=ci-placeholder docker compose --profile full --profile seed config --quiet
+      - name: Build the images
+        run: docker compose --profile full build

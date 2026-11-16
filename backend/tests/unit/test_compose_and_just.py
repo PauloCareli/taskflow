@@ -24,10 +24,10 @@ def test_ac08_postgres_and_redis_start_without_a_profile(
 
 
 @pytest.mark.parametrize("name", ["api", "worker"])
-def test_ac08_api_and_worker_only_start_with_the_full_profile(
+def test_ac08_api_and_worker_only_start_with_the_api_or_full_profile(
     services: dict[str, dict[str, Any]], name: str
 ) -> None:
-    assert services[name]["profiles"] == ["full"]
+    assert set(services[name]["profiles"]) == {"api", "full"}
     assert services[name]["build"] in ("./backend", {"context": "./backend"})
 
 

@@ -11,7 +11,7 @@ from taskapp.seed import DEMO_PASSWORD, DEMO_USERS
 ROOT = Path(__file__).resolve().parents[3]
 README = (ROOT / "README.md").read_text()
 # Paths the README tells the reader to create themselves.
-CREATED_BY_THE_READER = {"backend/.env"}
+CREATED_BY_THE_READER = {"backend/.env", "backend/.local-jwt-secret"}
 PATH_ROOTS = ("backend/", "frontend/", "spec/", "docs/", ".github/", "justfile", "docker-compose")
 
 
@@ -36,19 +36,38 @@ def test_ac03_every_backend_setting_is_documented(name: str) -> None:
     assert f"`{name}`" in README
 
 
-@pytest.mark.parametrize("name", ["VITE_API_BASE_URL", "POSTGRES_PORT", "REDIS_PORT", "API_PORT"])
+@pytest.mark.parametrize(
+    "name",
+    ["VITE_API_BASE_URL", "POSTGRES_PORT", "REDIS_PORT", "API_PORT", "WEB_PORT", "API_UPSTREAM"],
+)
 def test_ac03_frontend_and_compose_settings_are_documented(name: str) -> None:
     assert f"`{name}`" in README
 
 
-def test_ac03_required_settings_appear_in_the_env_example() -> None:
-    example = (ROOT / "backend" / ".env.example").read_text()
-    required = [n for n, field in Settings.model_fields.items() if field.is_required()]
+@pytest.mark.parametrize(
+    "command",
+    [
+        "docker compose --profile api up",
+        "docker compose --profile web up",
+        "docker compose --profile full up",
+        "docker compose run --rm seed",
+    ],
+)
+def test_ac07_every_docker_route_is_documented(command: str) -> None:
+    assert command in README
 
-    assert required
-    for name in required:
-        assert f"TASKAPP_{name.upper()}" in example
+
+def test_ac03_the_env_examples_cover_the_secret_and_the_frontend_setting() -> None:
+    example = (ROOT / "backend" / ".env.example").read_text()
+
+    assert "TASKAPP_JWT_SECRET" in example
+    assert ".local-jwt-secret" in example
     assert "VITE_API_BASE_URL" in (ROOT / "frontend" / ".env.example").read_text()
+
+
+def test_ac06_the_readme_explains_the_generated_secret_and_where_it_is_kept() -> None:
+    assert ".local-jwt-secret" in README
+    assert "`TASKAPP_JWT_SECRET_FILE`" in README
 
 
 def test_ac03_the_demo_credentials_are_documented() -> None:

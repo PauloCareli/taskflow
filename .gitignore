@@ -23,3 +23,6 @@ playwright-report/
 .DS_Store
 .idea/
 .vscode/
+
+# generated signing secret for local runs
+.local-jwt-secret
