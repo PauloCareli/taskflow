@@ -2,6 +2,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
+from fastapi.routing import APIRoute
 from slowapi import Limiter
 
 from taskapp.api.dependencies import Dependencies
@@ -16,7 +17,10 @@ def _mount(app: FastAPI, router: APIRouter) -> None:
     `include_router` hides them behind a wrapper object that slowapi's middleware cannot look
     into, which would leave every routed endpoint without the default rate limit.
     """
-    app.router.routes.extend(router.routes)
+    for route in router.routes:
+        if isinstance(route, APIRoute):
+            route.dependency_overrides_provider = app  # as include_router would set it
+        app.router.routes.append(route)
 
 
 def create_app(
