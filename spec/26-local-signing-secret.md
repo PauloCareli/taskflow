@@ -34,3 +34,15 @@ No API changes.
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `test_signing_secret.py`: `test_ac01_*` (file created for its owner only, one warning naming the file, every local environment, empty counts as unset) | infrastructure |
+| AC-02 | `test_signing_secret.py`: `test_ac02_*` (a restart reuses the file and earlier tokens stay valid, no second warning) | infrastructure |
+| AC-03 | `test_signing_secret.py`: `test_ac03_*` (an invalid file is replaced, an unwritable location falls back to memory) | infrastructure |
+| AC-04 | `test_signing_secret.py`: `test_ac04_*`; `test_settings.py`: `test_ac05_*` (other environments refuse to start, the file is not read, a short secret is an error everywhere and not echoed, the start-up message) | infrastructure |
+| AC-05 | `test_signing_secret.py`: `test_ac05_*` (an explicit secret wins and the file is never touched) | infrastructure |
+| AC-06 | `test_signing_secret.py`: `test_ac06_*` (random, shared within a process, two processes agree, never logged); `test_composition.py`: `test_ac06_the_token_service_and_the_rate_limiter_share_the_generated_secret` | infrastructure, composition |
+| AC-07 | `test_signing_secret.py`: `test_ac07_*`; migrate and seed run for real below | infrastructure |
+| AC-08 | `test_docker_stack.py`: `test_ac08_*` (volume, `/data` owned by the non-root user, git and Docker ignore); `test_readme.py`: `test_ac06_the_readme_explains_*`, `test_ac03_the_env_examples_*` | compose, docs |
+
+### Verification record
+- **Local, no `.env` and no secret set:** `alembic upgrade head` and the seed created no file (AC-07). Starting the API created `.local-jwt-secret` with mode 600 and logged one warning that names the file and does not contain the secret (AC-01, AC-06). A token from sign-in was accepted after restarting the API, with no new warning (AC-02). After deleting the file and restarting, the old token was rejected (401) and the warning appeared again. With `TASKAPP_ENVIRONMENT=production` the API refused to start with a message naming `TASKAPP_JWT_SECRET` and created no file (AC-04).
+- **Docker, no secret exported:** the API container generated its secret at `/data/jwt-secret` (owned by the non-root `app` user, mode 600). A token stayed valid after `docker compose restart api` and after `down` then `up`, with no new warning; after `down -v` (volume deleted) it was rejected (401) (AC-08).

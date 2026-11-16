@@ -134,3 +134,10 @@ Entry format:
 
 **Output:** spec `3e10ac3`; red/green `d5443e4`/`ee433f5` (profiles, services, images, workflow, README coverage), `c9a4dee`/`0cd885e` (the web container could not start as a non-root user), chore `709e509` (image size)
 **Review notes:** each route was run from nothing on separate ports and its own Compose project (backend only, frontend only against an API on the host, everything), then the main browser flows were driven through the web container. Running it found three things the structural tests could not: the web container failed to start as a non-root user, the first web image carried a 160 MB npm cache, and the spec's claim that the `web` profile alone starts only the web container was wrong, because Compose also starts services that have no profile.
+
+## 2026-11-16 — Local signing secret (#26)
+**Prompt:**
+> After the Docker stack, the question was why the API needs a signing secret to start when it is only used after sign-in, and whether `docker compose up` could just work. A spec (`spec/26-local-signing-secret.md`) was drafted for generating a secret in local environments only; the answers were: the same list of local environments as the seed, an empty value counts as unset, staging and production still refuse to start, people must stay signed in across restarts (so the generated secret is kept in a git-ignored file), and the work belongs in the Docker pull request because it fixes its first-run experience.
+
+**Output:** spec `c6ecc5d`, `2e62015`; red `e82010f`; green `23d24f9`; polish `91e1a83` (absolute path in the warning)
+**Review notes:** the behavior was verified for real, locally and in Docker, with no secret set anywhere: the file is created for its owner only, a restart keeps tokens valid, deleting the file signs everyone out, production refuses to start, and `restart`, `down` and `up` keep the Docker volume. One correction to the first idea is in the spec: a page reload never signs anyone out (the access token is in the browser's local storage), only an API restart does, and the secret itself must never go to the browser.
