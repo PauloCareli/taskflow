@@ -41,3 +41,19 @@ def test_ac07_the_worker_entrypoint_module_exposes_the_app() -> None:
 
     assert isinstance(app, Celery)
     assert app.main == "taskapp"
+
+
+def test_ac05_the_worker_app_keeps_the_brokers_default_timeouts() -> None:
+    # Short timeouts would make the worker's blocking poll for new tasks time out constantly.
+    options = create_celery_app(Settings()).conf.broker_transport_options
+
+    assert "socket_timeout" not in options
+    assert "socket_connect_timeout" not in options
+
+
+def test_ac05_the_publisher_app_fails_fast_when_the_broker_is_down() -> None:
+    conf = create_celery_app(Settings(), publisher=True).conf
+
+    assert conf.task_publish_retry is False
+    assert conf.broker_transport_options["socket_connect_timeout"] <= 0.5
+    assert conf.broker_transport_options["socket_timeout"] <= 0.5

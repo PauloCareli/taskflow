@@ -23,6 +23,10 @@ be:
 migrate:
     cd {{backend}} && uv run alembic upgrade head
 
+# Load demo users and tasks (run `just migrate` first; does nothing if they are already there)
+seed:
+    cd {{backend}} && uv run python -m taskapp.seed
+
 # Run a Celery worker (needs Redis: just up)
 worker:
     cd {{backend}} && uv run celery -A taskapp.infrastructure.celery_app worker --loglevel=info

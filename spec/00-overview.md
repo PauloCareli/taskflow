@@ -43,7 +43,7 @@ Uniform body: `{"error": {"code": "<machine_code>", "message": "<human text>", "
 
 ## Rate limiting
 - Default 100 requests/minute per user (per IP when anonymous).
-- `POST /auth/login` and `/auth/register`: 5/minute per IP.
+- `POST /auth/login` and `/auth/register`: 20/minute per IP.
 - 429 with the standard error body and `Retry-After`.
 
 ## Background jobs

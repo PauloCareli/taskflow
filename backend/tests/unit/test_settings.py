@@ -18,6 +18,7 @@ def isolated_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         "REDIS_URL",
         "JWT_SECRET",
         "RATE_LIMIT_DEFAULT",
+        "RATE_LIMIT_AUTH",
         "CELERY_EAGER",
     ):
         monkeypatch.delenv(f"TASKAPP_{name}", raising=False)
@@ -110,3 +111,25 @@ def test_ac06_celery_eager_can_be_switched_on(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setenv("TASKAPP_CELERY_EAGER", "true")
 
     assert Settings().celery_eager is True
+
+
+def test_ac01_the_authentication_limit_defaults_to_20_per_minute() -> None:
+    assert Settings().rate_limit_auth == "20/minute"
+
+
+def test_ac01_the_authentication_limit_comes_from_the_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("TASKAPP_RATE_LIMIT_AUTH", "5/minute")
+
+    assert Settings().rate_limit_auth == "5/minute"
+
+
+@pytest.mark.parametrize("value", ["", "lots", "20", "20/fortnight"])
+def test_ac01_an_invalid_authentication_limit_fails_and_names_the_setting(
+    monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    monkeypatch.setenv("TASKAPP_RATE_LIMIT_AUTH", value)
+
+    with pytest.raises(ValidationError, match="TASKAPP_RATE_LIMIT_AUTH"):
+        Settings()
