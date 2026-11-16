@@ -21,4 +21,6 @@ COPY --from=build /app/dist ./dist
 COPY vite.preview.config.js ./
 USER node
 EXPOSE 8080
-CMD ["node", "node_modules/vite/bin/vite.js", "preview", "--config", "vite.preview.config.js"]
+# `--configLoader native` imports the plain ESM config directly. The default loader writes a
+# temporary file next to it, which the non-root user is not allowed to do.
+CMD ["node", "node_modules/vite/bin/vite.js", "preview", "--config", "vite.preview.config.js", "--configLoader", "native"]
