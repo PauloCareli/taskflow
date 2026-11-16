@@ -61,6 +61,11 @@ def test_ac03_the_readme_has_a_troubleshooting_section() -> None:
     assert any("troubleshooting" in heading for heading in headings())
 
 
+def test_ac01_the_quick_start_clones_the_real_repository_not_a_placeholder() -> None:
+    assert "<repository-url>" not in README
+    assert "git clone https://github.com/PauloCareli/taskflow.git" in README
+
+
 def test_ac01_the_readme_is_not_marked_as_work_in_progress() -> None:
     assert "work in progress" not in README.lower()
 
