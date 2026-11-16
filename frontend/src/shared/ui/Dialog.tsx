@@ -4,13 +4,21 @@ type DialogProps = {
   title: string
   role?: 'dialog' | 'alertdialog'
   onClose: () => void
+  /** Adds an X button and closes when the backdrop is clicked. */
+  dismissible?: boolean
   children: ReactNode
 }
 
 const FOCUSABLE =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]'
 
-export function Dialog({ title, role = 'dialog', onClose, children }: DialogProps) {
+export function Dialog({
+  title,
+  role = 'dialog',
+  onClose,
+  dismissible = false,
+  children,
+}: DialogProps) {
   const titleId = useId()
   const panel = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
@@ -49,7 +57,13 @@ export function Dialog({ title, role = 'dialog', onClose, children }: DialogProp
   }, [])
 
   return (
-    <div className="fixed inset-0 z-10 flex items-center justify-center bg-canvas/80 p-4">
+    <div
+      role="presentation"
+      className="fixed inset-0 z-10 flex items-center justify-center bg-canvas/80 p-4"
+      onMouseDown={(event) => {
+        if (dismissible && event.target === event.currentTarget) onClose()
+      }}
+    >
       <div
         ref={panel}
         role={role}
@@ -57,9 +71,21 @@ export function Dialog({ title, role = 'dialog', onClose, children }: DialogProp
         aria-labelledby={titleId}
         className="flex max-h-full w-full max-w-md flex-col gap-4 overflow-y-auto rounded-md border border-border bg-surface p-6 shadow-lg"
       >
-        <h2 id={titleId} className="text-xl font-semibold">
-          {title}
-        </h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2 id={titleId} className="min-w-0 break-words text-xl font-semibold">
+            {title}
+          </h2>
+          {dismissible ? (
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={onClose}
+              className="-mr-2 -mt-1 inline-flex size-9 shrink-0 items-center justify-center rounded-md text-xl text-fg-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          ) : null}
+        </div>
         {children}
       </div>
     </div>

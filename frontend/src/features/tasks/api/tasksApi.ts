@@ -4,12 +4,10 @@ import { api } from '../../../shared/api/client'
 import {
   taskPageSchema,
   taskSchema,
-  userListSchema,
   type Task,
   type TaskPage,
   type TaskQuery,
   type TaskStatus,
-  type User,
 } from '../schemas/taskSchemas'
 
 function parse<T>(schema: z.ZodType<T>, body: unknown, what: string): T {
@@ -49,10 +47,6 @@ export type TaskChanges = {
   description?: string
   due_date?: string | null
   status?: TaskStatus
-}
-
-export async function listUsers(): Promise<User[]> {
-  return parse(userListSchema, await api.get('/users'), 'user list')
 }
 
 export async function createTask(input: NewTask): Promise<Task> {
