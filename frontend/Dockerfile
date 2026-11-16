@@ -16,7 +16,8 @@ RUN VITE_VERSION="$(node -p "require('/tmp/package-lock.json').packages['node_mo
     && npm init -y > /dev/null \
     && npm pkg set type=module > /dev/null \
     && npm install --no-audit --no-fund "vite@${VITE_VERSION}" \
-    && rm /tmp/package-lock.json
+    && npm cache clean --force \
+    && rm -rf /tmp/package-lock.json /root/.npm
 COPY --from=build /app/dist ./dist
 COPY vite.preview.config.js ./
 USER node
