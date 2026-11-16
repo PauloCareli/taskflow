@@ -7,8 +7,9 @@ import { Dialog } from '../../../shared/ui/Dialog'
 import { SelectField } from '../../../shared/ui/SelectField'
 import { TextAreaField } from '../../../shared/ui/TextAreaField'
 import { TextField } from '../../../shared/ui/TextField'
-import { useAssignTask, useCreateTask, useUpdateTask, useUsers } from '../hooks/useTaskMutations'
+import { useAssignTask, useCreateTask, useUpdateTask } from '../hooks/useTaskMutations'
 import type { TaskChanges } from '../api/tasksApi'
+import { useUsers } from '../../users/hooks/useUsers'
 import { taskFormSchema, type Task, type TaskFormValues } from '../schemas/taskSchemas'
 
 type Props = { task?: Task; onClose: () => void }
