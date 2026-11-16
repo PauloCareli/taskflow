@@ -86,3 +86,23 @@ def test_ac08_just_seed_runs_the_seed_command() -> None:
 
     assert recipe is not None
     assert "python -m taskapp.seed" in recipe.group(1)
+
+
+@pytest.mark.parametrize(
+    ("service", "variable", "default", "container_port"),
+    [
+        ("postgres", "POSTGRES_PORT", 5432, 5432),
+        ("redis", "REDIS_PORT", 6379, 6379),
+        ("api", "API_PORT", 8000, 8000),
+    ],
+)
+def test_ac02_host_ports_can_be_changed_so_a_second_stack_can_run_beside_the_first(
+    services: dict[str, dict[str, Any]],
+    service: str,
+    variable: str,
+    default: int,
+    container_port: int,
+) -> None:
+    ports = services[service]["ports"]
+
+    assert ports == [f"127.0.0.1:${{{variable}:-{default}}}:{container_port}"]
