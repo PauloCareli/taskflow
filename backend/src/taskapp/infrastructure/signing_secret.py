@@ -44,14 +44,14 @@ def load_or_create(path: Path) -> str:
         logger.warning(
             "The signing secret file %s was empty or too short, so it was replaced with a new "
             "secret. Everyone who was signed in has to sign in again.",
-            path,
+            path.absolute(),
         )
     else:
         logger.warning(
             "No TASKAPP_JWT_SECRET is set, so a signing secret was generated and saved to %s. "
             "People stay signed in across restarts while that file exists; delete it to sign "
             "everyone out, or set TASKAPP_JWT_SECRET to use your own.",
-            path,
+            path.absolute(),
         )
     return secret
 
@@ -88,5 +88,5 @@ def _warn_in_memory(path: Path) -> None:
         "Could not save a generated signing secret to %s, so one kept in memory is used: "
         "everyone is signed out when the API restarts. Make that location writable or set "
         "TASKAPP_JWT_SECRET.",
-        path,
+        path.absolute(),
     )
