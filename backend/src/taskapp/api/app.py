@@ -2,7 +2,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
-from fastapi.routing import APIRoute
+from fastapi.routing import APIRoute, request_response
 from slowapi import Limiter
 
 from taskapp.api.dependencies import Dependencies
@@ -19,7 +19,10 @@ def _mount(app: FastAPI, router: APIRouter) -> None:
     """
     for route in router.routes:
         if isinstance(route, APIRoute):
-            route.dependency_overrides_provider = app  # as include_router would set it
+            # As `include_router` would set it. The handler captures the provider when it is
+            # built, so it has to be rebuilt after the change.
+            route.dependency_overrides_provider = app
+            route.app = request_response(route.get_route_handler())
         app.router.routes.append(route)
 
 
