@@ -39,21 +39,36 @@ just fe        # frontend on http://localhost:5173
 ```
 Open http://localhost:5173 and sign in as `test1@example.com` with the password `password123` (see [Demo data](#demo-data)). Check the API directly with `curl localhost:8000/health` (`{"status":"ok"}`) or open its Swagger page at http://localhost:8000/docs.
 
+Prefer Docker, with no uv or Node on your machine? See [Running in Docker](#running-in-docker).
+
 To confirm everything works, run `just check` (lint, type checks and all tests, backend and frontend). It needs the PostgreSQL from `just up`.
 
 Stop the infrastructure with `just down`.
 
 ## Running in Docker
 
-By default only PostgreSQL and Redis run in Docker and you run the API and the frontend on your machine (above). To run the API and a Celery worker in Docker as well:
+Docker can run the whole app, the backend only, or the frontend only, so you do not need uv or Node on your machine for it. PostgreSQL and Redis always run in Docker; the profiles add the rest:
+
+| Profile | Starts | Command |
+|---|---|---|
+| `api` | schema migration, API (http://localhost:8000), Celery worker | `docker compose --profile api up --build --wait` |
+| `web` | the frontend (http://localhost:8080) | `docker compose --profile web up --build --wait web` |
+| `full` | everything above | `docker compose --profile full up --build --wait` |
 
 ```bash
 export TASKAPP_JWT_SECRET="$(python3 -c 'import secrets; print(secrets.token_urlsafe(48))')"
-docker compose --profile full up --build --wait
-just migrate   # once; the containers do not run migrations
-just seed      # optional demo data
+docker compose --profile full up --build --wait   # migrates the database, then starts the API, the worker and the web container
+docker compose run --rm seed                      # demo data (see Demo data); safe to run again
 ```
-The API is then on http://localhost:8000 (change the port with `API_PORT`) and `just fe` serves the frontend against it. The API refuses to start when `TASKAPP_JWT_SECRET` is empty. Stop everything with `docker compose --profile full down` (add `-v` to delete the database volume).
+Then open http://localhost:8080 and sign in with a demo user. The API refuses to start when `TASKAPP_JWT_SECRET` is empty. The API container applies the migrations through a one-shot `migrate` service that the API and the worker wait for, so nothing needs to be run on your machine.
+
+**Frontend only:** name the `web` service, as in the table. Without a service name Compose also starts PostgreSQL and Redis, which belong to no profile. The web container forwards `/api` to the API at `API_UPSTREAM`, which defaults to the `api` service. To use an API that runs on your machine (for example `just be`), set `API_UPSTREAM=http://host.docker.internal:8000`. Without any API the pages load and show the usual "API unavailable" state.
+
+**Backend only:** `docker compose --profile api up --build --wait` is enough; run `just fe` on your machine if you also want the frontend, or start the `web` profile alongside it.
+
+The web container serves the built frontend with Vite's preview server, which Vite documents as meant for local use rather than production. Behind it every client reaches the API from the same address, so anonymous requests (including login and register) share one rate-limit budget; signed-in requests are still counted per user.
+
+Stop with `docker compose --profile full down` (add `-v` to delete the database volume).
 
 ## Commands
 
@@ -98,7 +113,9 @@ Other variables:
 | `VITE_API_BASE_URL` | `/api` (set by `just fe`) | Where the frontend sends API calls: an absolute `http(s)` URL or an absolute path. The Vite dev server proxies `/api` to `http://localhost:8000`. A missing or invalid value stops the dev server and the build with a clear message (`frontend/.env.example`). |
 | `POSTGRES_PORT` | `5432` | Host port of the PostgreSQL container. If you change it, change `TASKAPP_DATABASE_URL` too. |
 | `REDIS_PORT` | `6379` | Host port of the Redis container. If you change it, change `TASKAPP_REDIS_URL` too. |
-| `API_PORT` | `8000` | Host port of the API container (`full` profile). |
+| `API_PORT` | `8000` | Host port of the API container (`api` and `full` profiles). |
+| `WEB_PORT` | `8080` | Host port of the web container (`web` and `full` profiles). |
+| `API_UPSTREAM` | `http://api:8000` | Where the web container forwards `/api`; use `http://host.docker.internal:8000` for an API on your machine. |
 
 ## Demo data
 
@@ -207,14 +224,14 @@ docs/ai/    prompts, corrections and usage of the AI tooling
 .claude/    the project's slash-command workflows
 .github/    CI workflow and pull request template
 justfile    all project commands
-docker-compose.yml   PostgreSQL, Redis and (profile `full`) the API and worker
+docker-compose.yml   PostgreSQL, Redis and, by profile, the migration, API, worker, web and seed services
 ```
 
 ## Troubleshooting
 
 - **The API stops at start-up with a message about `TASKAPP_JWT_SECRET`.** The secret is missing or shorter than 32 characters. Create `backend/.env` and add one (see [Quick start](#quick-start)).
 - **`connection refused` from `just migrate`, `just seed`, `just test` or `just check`.** PostgreSQL is not running. Start it with `just up`, and make sure Docker is running.
-- **A port is already in use (5432, 6379, 8000 or 5173).** Stop whatever uses it, or move the containers with `POSTGRES_PORT`, `REDIS_PORT` and `API_PORT` and update `TASKAPP_DATABASE_URL` or `TASKAPP_REDIS_URL` to match. The frontend dev server expects the API on `http://localhost:8000`.
+- **A port is already in use (5432, 6379, 8000, 8080 or 5173).** Stop whatever uses it, or move the containers with `POSTGRES_PORT`, `REDIS_PORT`, `API_PORT` and `WEB_PORT` and update `TASKAPP_DATABASE_URL` or `TASKAPP_REDIS_URL` to match. The frontend dev server expects the API on `http://localhost:8000`.
 - **`just seed` says it is refusing to run.** `TASKAPP_ENVIRONMENT` is not one of `local`, `dev`, `development` or `test`. Demo data has published passwords and is never loaded elsewhere.
 - **`just seed` says the data is already there.** The demo users exist; the command never changes existing data. To start over, `docker compose down -v` deletes the database volume, then run `just up`, `just migrate` and `just seed` again.
 - **`429 Too Many Requests`.** A rate limit was hit; wait for `Retry-After` seconds, or raise `TASKAPP_RATE_LIMIT_DEFAULT` or `TASKAPP_RATE_LIMIT_AUTH` while developing.
