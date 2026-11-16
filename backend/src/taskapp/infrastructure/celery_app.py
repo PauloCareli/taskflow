@@ -4,7 +4,7 @@ from taskapp.infrastructure.settings import Settings, get_settings
 from taskapp.infrastructure.tasks import register_tasks
 
 
-def create_celery_app(settings: Settings) -> Celery:
+def create_celery_app(settings: Settings, *, publisher: bool = False) -> Celery:
     """Celery on the Redis broker. Nothing connects until a task is sent or a worker starts."""
     app = Celery("taskapp", broker=settings.redis_url)
     app.conf.update(

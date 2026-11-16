@@ -34,3 +34,14 @@ async def test_ac02_the_application_limiter_keys_requests_by_signed_in_user() ->
 
     assert one == [200, 200, 429]
     assert two == [200, 200, 429]
+
+
+def test_ac05_the_notifier_publishes_through_the_fail_fast_app() -> None:
+    from taskapp.composition import build_dependencies
+
+    settings = Settings(jwt_secret=SECRET)  # type: ignore[arg-type]
+
+    notifier = build_dependencies(settings).notifier
+
+    options = notifier._task.app.conf.broker_transport_options  # type: ignore[attr-defined]
+    assert options["socket_connect_timeout"] <= 0.5
