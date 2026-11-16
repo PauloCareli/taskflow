@@ -17,6 +17,7 @@ def isolated_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         "DATABASE_URL",
         "REDIS_URL",
         "JWT_SECRET",
+        "JWT_SECRET_FILE",
         "RATE_LIMIT_DEFAULT",
         "RATE_LIMIT_AUTH",
         "CELERY_EAGER",
@@ -60,26 +61,28 @@ def test_ac08_the_environment_wins_over_the_dotenv_file(
 def test_ac05_the_jwt_secret_is_read_from_the_environment_and_not_printed() -> None:
     settings = Settings()
 
-    assert settings.jwt_secret.get_secret_value() == SECRET
+    assert settings.signing_secret() == SECRET
     assert SECRET not in repr(settings)
 
 
-def test_ac05_a_missing_jwt_secret_stops_startup_naming_the_setting(
+def test_ac05_a_missing_jwt_secret_stops_startup_outside_local_environments(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("TASKAPP_JWT_SECRET")
+    monkeypatch.setenv("TASKAPP_ENVIRONMENT", "production")
 
-    with pytest.raises(ValidationError, match="jwt_secret"):
+    with pytest.raises(ValidationError, match="TASKAPP_JWT_SECRET"):
         Settings()
 
 
 @pytest.mark.parametrize("secret", ["", "too-short"])
-def test_ac05_an_empty_or_short_jwt_secret_stops_startup(
+def test_ac05_an_empty_or_short_jwt_secret_stops_startup_in_production(
     monkeypatch: pytest.MonkeyPatch, secret: str
 ) -> None:
     monkeypatch.setenv("TASKAPP_JWT_SECRET", secret)
+    monkeypatch.setenv("TASKAPP_ENVIRONMENT", "production")
 
-    with pytest.raises(ValidationError, match="jwt_secret"):
+    with pytest.raises(ValidationError, match="TASKAPP_JWT_SECRET"):
         Settings()
 
 
@@ -139,6 +142,7 @@ def test_ac02_starting_without_a_secret_gives_a_message_that_points_to_the_readm
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("TASKAPP_JWT_SECRET")
+    monkeypatch.setenv("TASKAPP_ENVIRONMENT", "production")
     get_settings.cache_clear()
 
     try:

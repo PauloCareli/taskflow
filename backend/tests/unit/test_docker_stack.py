@@ -176,3 +176,30 @@ def test_ac08_a_workflow_builds_the_images_when_docker_files_change() -> None:
     for watched in ("docker-compose.yml", "backend/Dockerfile", "frontend/Dockerfile"):
         assert watched in paths
     assert "docker compose --profile full build" in commands
+
+
+# --- Spec 26: the signing secret file survives restarts in Docker and stays out of git ----
+
+
+def test_ac08_the_api_keeps_its_signing_secret_on_a_named_volume() -> None:
+    compose = yaml.safe_load((ROOT / "docker-compose.yml").read_text())
+    api = compose["services"]["api"]
+
+    assert api["volumes"] == ["api_data:/data"]
+    assert api["environment"]["TASKAPP_JWT_SECRET_FILE"] == "/data/jwt-secret"
+    assert "api_data" in compose["volumes"]
+
+
+def test_ac08_the_data_directory_belongs_to_the_non_root_user_so_the_volume_is_writable() -> None:
+    final = dockerfile_stages("backend/Dockerfile")[-1]
+
+    assert re.search(r"mkdir[^\n]*/data", final)
+    assert re.search(r"chown\s+(-R\s+)?app\S*\s+/data", final)
+    assert final.index("/data") < final.index("USER app")
+
+
+@pytest.mark.parametrize("path", [".gitignore", "backend/.dockerignore"])
+def test_ac08_the_secret_file_is_ignored_by_git_and_by_docker_builds(path: str) -> None:
+    entries = {line.strip() for line in (ROOT / path).read_text().splitlines()}
+
+    assert ".local-jwt-secret" in entries

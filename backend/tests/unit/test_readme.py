@@ -57,14 +57,17 @@ def test_ac07_every_docker_route_is_documented(command: str) -> None:
     assert command in README
 
 
-def test_ac03_required_settings_appear_in_the_env_example() -> None:
+def test_ac03_the_env_examples_cover_the_secret_and_the_frontend_setting() -> None:
     example = (ROOT / "backend" / ".env.example").read_text()
-    required = [n for n, field in Settings.model_fields.items() if field.is_required()]
 
-    assert required
-    for name in required:
-        assert f"TASKAPP_{name.upper()}" in example
+    assert "TASKAPP_JWT_SECRET" in example
+    assert ".local-jwt-secret" in example
     assert "VITE_API_BASE_URL" in (ROOT / "frontend" / ".env.example").read_text()
+
+
+def test_ac06_the_readme_explains_the_generated_secret_and_where_it_is_kept() -> None:
+    assert ".local-jwt-secret" in README
+    assert "`TASKAPP_JWT_SECRET_FILE`" in README
 
 
 def test_ac03_the_demo_credentials_are_documented() -> None:

@@ -1,10 +1,13 @@
 from functools import lru_cache
+from pathlib import Path
 
 from limits import parse
 from pydantic import Field, SecretStr, ValidationError, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_DATABASE_URL = "postgresql+asyncpg://taskflow:taskflow@localhost:5432/taskflow"
+# Environments where demo data may be seeded and a signing secret may be generated.
+LOCAL_ENVIRONMENTS = frozenset({"local", "dev", "development", "test"})
 
 
 class DatabaseSettings(BaseSettings):
@@ -24,9 +27,13 @@ class Settings(DatabaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     # Required, no default: the app refuses to start without TASKAPP_JWT_SECRET (32+ characters).
     jwt_secret: SecretStr = Field(default=..., min_length=32)
+    jwt_secret_file: Path = Path(".local-jwt-secret")
     rate_limit_default: str = "100/minute"
     rate_limit_auth: str = "20/minute"
     celery_eager: bool = False
+
+    def signing_secret(self) -> str:
+        raise NotImplementedError
 
     @field_validator("rate_limit_default", "rate_limit_auth")
     @classmethod
