@@ -17,7 +17,7 @@ Trying the app locally, including with `docker compose`, no longer needs `TASKAP
 - AC-04: Given any other value of `TASKAPP_ENVIRONMENT` (for example `production`, `staging` or an unknown value, with surrounding spaces and letter case ignored) and no secret, when the API starts, then it refuses to start with a message that names `TASKAPP_JWT_SECRET` and points to the README, and the secret file is neither read nor created; given `TASKAPP_JWT_SECRET` is set to a non-empty value shorter than 32 characters, then it refuses to start in every environment.
 - AC-05: Given `TASKAPP_JWT_SECRET` is set to a valid secret, then it is used in every environment and the secret file is neither read nor created.
 - AC-06: Given a generated secret, then it is random with at least 32 bytes of entropy, is the same for every part of the API within one process (a token issued at sign-in is accepted by the request that follows, including by the per-user rate limit), and never appears in logs or error messages.
-- AC-07: Given `just seed`, the Celery worker, `just migrate` or any other command that does not issue or verify tokens, then none of them needs a secret, none creates the file and none logs the warning.
+- AC-07: Given a local environment, when `just seed`, the Celery worker, `just migrate` or any other command that does not issue or verify tokens runs, then none of them creates the secret file or logs the warning.
 - AC-08: Given the repository and the images, then the secret file is ignored by git and left out of every Docker build context, the API container keeps it on a named volume owned by the non-root user so it survives `docker compose down` and `up` (and `down -v` signs everyone out), and the README, `backend/.env.example` and the compose file explain all of this, including that setting a real secret is what to do in any shared or non-local environment.
 
 ## Edge cases
@@ -26,6 +26,7 @@ Trying the app locally, including with `docker compose`, no longer needs `TASKAP
 - The file's location is a setting (`TASKAPP_JWT_SECRET_FILE`), defaulting to a hidden file in the directory the API runs from (`backend/` for `just be`) and `/data/jwt-secret` in the container.
 - The environment check uses the same list of local environments as `just seed`; there is one definition.
 - The warning is logged once per process, and never contains the secret.
+- In a non-local environment every process that builds the settings, including the worker, still needs `TASKAPP_JWT_SECRET`, as today; only the API ever uses it.
 
 ## API contract
 No API changes.
