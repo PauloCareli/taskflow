@@ -1,25 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   assignTask,
   completeTask,
   createTask,
   deleteTask,
-  listUsers,
   updateTask,
   type TaskChanges,
 } from '../api/tasksApi'
 import { taskKeys } from './useTasks'
 
-export const userKeys = { all: ['users'] as const }
-
-export function useUsers() {
-  return useQuery({ queryKey: userKeys.all, queryFn: listUsers, staleTime: 60_000 })
-}
-
-/** Every mutation refreshes the lists afterwards, also on failure, so the UI shows the truth. */
+/** Every mutation refreshes lists and details afterwards, also on failure, so the UI shows the truth. */
 function useListInvalidation() {
   const queryClient = useQueryClient()
-  return () => queryClient.invalidateQueries({ queryKey: taskKeys.lists() })
+  return () => queryClient.invalidateQueries({ queryKey: taskKeys.all })
 }
 
 export function useCreateTask() {

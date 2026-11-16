@@ -13,6 +13,7 @@ import {
 } from '../../../test/apiMock'
 import { server } from '../../../test/server'
 import { renderApp } from '../../../test/utils'
+import { chooseAction, chooseStatus, openActions } from '../../../test/ui'
 import { TOKEN_STORAGE_KEY } from '../auth/tokenStorage'
 
 function openList(tasks: MockTask[], signedInAs = ALICE.id) {
@@ -97,7 +98,7 @@ describe('task form', () => {
   it('test_ac06_editing_sends_only_changed_fields_and_does_not_reject_a_past_due_date', async () => {
     const task = makeTask({ title: 'Old title', due_date: '2020-01-01T23:59:59Z' })
     const mock = openList([task])
-    await userEvent.click(within(await item(/old title/i)).getByRole('button', { name: /edit/i }))
+    await chooseAction(await item(/old title/i), /edit/i)
     const dialog = await screen.findByRole('dialog', { name: /edit task/i })
     const title = within(dialog).getByLabelText(/title/i)
     expect(title).toHaveValue('Old title')
@@ -113,7 +114,7 @@ describe('task form', () => {
   it('test_ac07_reassigning_from_the_edit_form_updates_the_assignee', async () => {
     const task = makeTask({ title: 'Hand over' })
     const mock = openList([task])
-    await userEvent.click(within(await item(/hand over/i)).getByRole('button', { name: /edit/i }))
+    await chooseAction(await item(/hand over/i), /edit/i)
     const dialog = await screen.findByRole('dialog', { name: /edit task/i })
     const assignee = await within(dialog).findByLabelText(/assignee/i)
     await waitFor(() => expect(within(assignee).getAllByRole('option')).toHaveLength(3))
@@ -147,7 +148,7 @@ describe('status, complete and permissions', () => {
     const task = makeTask({ title: 'Move me' })
     const mock = openList([task])
     const card = await item(/move me/i)
-    await userEvent.selectOptions(within(card).getByLabelText(/status/i), 'Blocked')
+    await chooseStatus(card, 'Blocked')
     await waitFor(() =>
       expect(within(card).getByText('Blocked', { selector: 'span' })).toBeInTheDocument(),
     )
@@ -163,7 +164,7 @@ describe('status, complete and permissions', () => {
       expect(within(card).getByText('Completed', { selector: 'span' })).toBeInTheDocument(),
     )
     expect(within(card).queryByRole('button', { name: /complete/i })).not.toBeInTheDocument()
-    expect(within(card).queryByLabelText(/status/i)).not.toBeInTheDocument()
+    expect(within(card).queryByRole('button', { name: /change status/i })).not.toBeInTheDocument()
     expect(writes(mock)).toEqual([`POST /tasks/${task.id}/complete`])
   })
 
@@ -179,16 +180,20 @@ describe('status, complete and permissions', () => {
       ALICE.id,
     )
     const card = await item(/not mine/i)
-    expect(within(card).getByLabelText(/status/i)).toBeInTheDocument()
+    expect(within(card).getByRole('button', { name: /change status/i })).toBeInTheDocument()
     expect(within(card).getByRole('button', { name: /complete/i })).toBeInTheDocument()
-    expect(within(card).queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
-    expect(within(card).queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
+    const menu = await openActions(card)
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((entry) => entry.textContent),
+    ).toEqual(['View'])
   })
 
   it('test_ac07_terminal_tasks_offer_no_status_change', async () => {
     openList([makeTask({ title: 'Done already', status: 'completed' })])
     const card = await item(/done already/i)
-    expect(within(card).queryByLabelText(/status/i)).not.toBeInTheDocument()
+    expect(within(card).queryByRole('button', { name: /change status/i })).not.toBeInTheDocument()
     expect(within(card).queryByRole('button', { name: /complete/i })).not.toBeInTheDocument()
   })
 
@@ -200,7 +205,7 @@ describe('status, complete and permissions', () => {
       }),
     )
     const card = await item(/stuck/i)
-    await userEvent.selectOptions(within(card).getByLabelText(/status/i), 'Blocked')
+    await chooseStatus(card, 'Blocked')
     expect(await screen.findByRole('alert')).toHaveTextContent(/invalid status transition/i)
     expect(
       within(await item(/stuck/i)).getByText('To do', { selector: 'span' }),
@@ -237,7 +242,7 @@ describe('status, complete and permissions', () => {
 describe('delete', () => {
   it('test_ac08_delete_asks_for_confirmation_and_cancel_sends_nothing', async () => {
     const mock = openList([makeTask({ title: 'Keep me' })])
-    await userEvent.click(within(await item(/keep me/i)).getByRole('button', { name: /delete/i }))
+    await chooseAction(await item(/keep me/i), /delete/i)
     const dialog = await screen.findByRole('alertdialog', { name: /delete task/i })
     expect(dialog).toHaveTextContent(/keep me/i)
     await userEvent.click(within(dialog).getByRole('button', { name: /cancel/i }))
@@ -249,7 +254,7 @@ describe('delete', () => {
   it('test_ac08_confirming_deletes_the_task_and_removes_it_from_the_list', async () => {
     const task = makeTask({ title: 'Remove me' })
     const mock = openList([task, makeTask({ title: 'Other' })])
-    await userEvent.click(within(await item(/remove me/i)).getByRole('button', { name: /delete/i }))
+    await chooseAction(await item(/remove me/i), /delete/i)
     const dialog = await screen.findByRole('alertdialog')
     await userEvent.click(within(dialog).getByRole('button', { name: /^delete$/i }))
     await waitFor(() =>
@@ -264,7 +269,7 @@ describe('delete', () => {
     server.use(
       http.delete(`${API}/tasks/:id`, () => apiError(500, 'Server exploded'), { once: true }),
     )
-    await userEvent.click(within(await item(/survivor/i)).getByRole('button', { name: /delete/i }))
+    await chooseAction(await item(/survivor/i), /delete/i)
     await userEvent.click(
       within(await screen.findByRole('alertdialog')).getByRole('button', { name: /^delete$/i }),
     )
@@ -278,7 +283,7 @@ describe('delete', () => {
     await item(/row 1$/i)
     await userEvent.click(screen.getByRole('button', { name: /next page/i }))
     const last = await item(/row 26/i)
-    await userEvent.click(within(last).getByRole('button', { name: /delete/i }))
+    await chooseAction(last, /delete/i)
     await userEvent.click(
       within(await screen.findByRole('alertdialog')).getByRole('button', { name: /^delete$/i }),
     )
