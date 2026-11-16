@@ -25,9 +25,24 @@ services:
       timeout: 3s
       retries: 10
 
-  # `docker compose --profile full up` runs the API and the worker next to the services above.
+  # Profiles (see the README):
+  #   api   migration, API and worker       docker compose --profile api up
+  #   web   the frontend                    docker compose --profile web up
+  #   full  all of the above                docker compose --profile full up
+  #   seed  demo data, run on demand        docker compose run --rm seed
+  migrate:
+    profiles: [api, full, seed]
+    build: ./backend
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    environment:
+      TASKAPP_DATABASE_URL: postgresql+asyncpg://taskflow:taskflow@postgres:5432/taskflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   api:
-    profiles: [full]
+    profiles: [api, full]
     build: ./backend
     environment: &app-env
       TASKAPP_DATABASE_URL: postgresql+asyncpg://taskflow:taskflow@postgres:5432/taskflow
@@ -39,6 +54,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     ports:
       - "127.0.0.1:${API_PORT:-8000}:8000"
     healthcheck:
@@ -53,7 +70,7 @@ services:
       start_period: 5s
 
   worker:
-    profiles: [full]
+    profiles: [api, full]
     build: ./backend
     command: ["celery", "-A", "taskapp.infrastructure.celery_app", "worker", "--loglevel=info"]
     environment: *app-env
@@ -66,6 +83,40 @@ services:
       timeout: 10s
       retries: 5
       start_period: 15s
+
+  seed:
+    profiles: [seed]
+    build: ./backend
+    command: ["python", "-m", "taskapp.seed"]
+    restart: "no"
+    environment:
+      TASKAPP_DATABASE_URL: postgresql+asyncpg://taskflow:taskflow@postgres:5432/taskflow
+      TASKAPP_ENVIRONMENT: local
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    profiles: [web, full]
+    build: ./frontend
+    environment:
+      # Where `/api` is forwarded: the `api` service by default, or e.g.
+      # http://host.docker.internal:8000 for an API running on your machine.
+      API_UPSTREAM: ${API_UPSTREAM:-http://api:8000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      api:
+        condition: service_healthy
+        required: false # only waits for the API when it is part of the same run
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
 volumes:
   postgres_data:
