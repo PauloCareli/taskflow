@@ -36,9 +36,25 @@ def test_ac03_every_backend_setting_is_documented(name: str) -> None:
     assert f"`{name}`" in README
 
 
-@pytest.mark.parametrize("name", ["VITE_API_BASE_URL", "POSTGRES_PORT", "REDIS_PORT", "API_PORT"])
+@pytest.mark.parametrize(
+    "name",
+    ["VITE_API_BASE_URL", "POSTGRES_PORT", "REDIS_PORT", "API_PORT", "WEB_PORT", "API_UPSTREAM"],
+)
 def test_ac03_frontend_and_compose_settings_are_documented(name: str) -> None:
     assert f"`{name}`" in README
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "docker compose --profile api up",
+        "docker compose --profile web up",
+        "docker compose --profile full up",
+        "docker compose run --rm seed",
+    ],
+)
+def test_ac07_every_docker_route_is_documented(command: str) -> None:
+    assert command in README
 
 
 def test_ac03_required_settings_appear_in_the_env_example() -> None:
