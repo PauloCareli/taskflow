@@ -28,3 +28,16 @@ Anyone can clone the repository, follow the README and run, test and understand 
 ## AC -> test traceability
 | AC | Test | Layer |
 |---|---|---|
+| AC-01 | `test_readme.py`: `test_ac01_the_readme_is_not_marked_as_work_in_progress`; quick start run literally in AC-02 | docs |
+| AC-02 | clean-clone run (below); `test_compose_and_just.py`: `test_ac02_host_ports_can_be_changed_*`; `test_settings.py`: `test_ac02_starting_without_a_secret_*` | compose, infrastructure |
+| AC-03 | `test_readme.py`: `test_ac03_*` (every recipe, every setting, the env examples, demo credentials, troubleshooting) | docs |
+| AC-04 | `test_readme.py`: `test_ac04_the_readme_has_the_required_sections` | docs |
+| AC-05 | `test_readme.py`: `test_ac05_*` (AI logs linked, usage page honest) | docs |
+| AC-06 | `test_readme.py`: `test_ac06_*` (no stale spec, every link and path resolves) | docs |
+| AC-07 | full-history `gitleaks` scan and CI on `main` (below); coverage from `just test` and `just fe-test` | CI |
+| AC-08 | browser run (below); `document.test.ts`: `test_ac08_declares_an_icon_that_exists_*` | frontend |
+
+### Verification record
+- **Clean clone (AC-02):** a fresh `git clone` of this branch, with its own containers and an empty database, followed the README literally: configuration, `uv sync`, `npm ci`, `just up`, `just migrate`, `just seed`, `just be`, `just fe`. `/health`, `/docs`, the frontend and its `/api` proxy answered, `test1@example.com` signed in and saw its tasks, and `just check` passed (409 backend tests, 123 frontend tests). The Docker route (`docker compose --profile full up --build --wait`) started a healthy API and worker, and an assignment through the API was delivered to the worker. Starting without a secret printed a message that points to the README.
+- **Secret scan and CI (AC-07):** `gitleaks detect --log-opts="--all"` scanned 161 commits and found no leaks; CI on `main` is green. Backend coverage is 98.2% (`just test`); frontend coverage is 95.9% statements, 85.8% branches, 97.4% lines (`just fe-test`).
+- **Browser (AC-08):** headless Chrome drove registration, sign-in, creating, editing, assigning, changing the status of, completing and deleting tasks, filtering by status and due date, paging, the status and not-found pages, and sign-out, at 1280px and 360px wide (24 steps). It found no console errors or warnings, no failed requests, no HTTP error responses and no horizontal scroll, after one fix: the page had no favicon and the browser logged a 404 for it.
