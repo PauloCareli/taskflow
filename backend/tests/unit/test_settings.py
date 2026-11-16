@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from taskapp.infrastructure.settings import DatabaseSettings, Settings
+from taskapp.infrastructure.settings import DatabaseSettings, Settings, get_settings
 
 SECRET = "unit-test-secret-that-is-long-enough-for-hs256"
 
@@ -133,3 +133,20 @@ def test_ac01_an_invalid_authentication_limit_fails_and_names_the_setting(
 
     with pytest.raises(ValidationError, match="TASKAPP_RATE_LIMIT_AUTH"):
         Settings()
+
+
+def test_ac02_starting_without_a_secret_gives_a_message_that_points_to_the_readme(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("TASKAPP_JWT_SECRET")
+    get_settings.cache_clear()
+
+    try:
+        with pytest.raises(SystemExit) as stopped:
+            get_settings()
+    finally:
+        get_settings.cache_clear()
+
+    message = str(stopped.value)
+    assert "TASKAPP_JWT_SECRET" in message
+    assert "README" in message
