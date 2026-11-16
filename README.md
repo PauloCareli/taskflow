@@ -207,7 +207,7 @@ The project was built with Claude Code, working under written rules in [`AGENTS.
 Where to look:
 - [`docs/ai/prompts.md`](docs/ai/prompts.md): the prompts and plans behind each slice, the commits they produced, and what the reviews found.
 - [`docs/ai/corrections.md`](docs/ai/corrections.md): every mistake in AI-written code, how it was caught (a test, a review, or running it) and the commit that fixed it.
-- [`docs/ai/evidence.md`](docs/ai/evidence.md): one page with the prompt, a code sample (a domain rule, a use case and its test) and the evidence for validation, edge cases and performance.
+- [`GENAI.md`](GENAI.md): one page with the prompt, a code sample (a domain rule, a use case and its test) and the evidence for validation, corrections, edge cases and performance.
 - [`docs/ai/usage.md`](docs/ai/usage.md): time and usage. Exact figures were not recorded; the page gives an estimate.
 
 Validation did not rely on the AI's own judgment: behavior is pinned by tests written before the code, boundaries by import-linter, types by strict mypy and `tsc`, secrets by gitleaks in the pre-commit hook and in CI, and defects that slipped through were found by the independent review or by running the app and are listed in the corrections log.

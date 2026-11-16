@@ -1,6 +1,6 @@
-# How the AI output was checked
+# GenAI: how the AI output was checked
 
-One page that answers four questions: how output was validated, how it was corrected, how edge cases, auth and validation were handled, and how performance and idiomatic quality were assessed. The logs behind it are [`prompts.md`](prompts.md) and [`corrections.md`](corrections.md).
+How AI was used in this project, on one page: how output was validated, how it was corrected, how edge cases, auth and validation were handled, and how performance and idiomatic quality were assessed. The logs behind it are [`docs/ai/prompts.md`](docs/ai/prompts.md) and [`docs/ai/corrections.md`](docs/ai/corrections.md).
 
 ## The prompt
 
@@ -91,7 +91,7 @@ The AI's own judgment was never the check. Each layer has a mechanical gate:
 
 ## Corrections
 
-[`corrections.md`](corrections.md) lists 19 defects in AI-written code with how each was caught and the commit that fixed it. The review caught most of them, a failing test or running the app against Postgres caught others. Examples worth reading:
+[`docs/ai/corrections.md`](docs/ai/corrections.md) lists 19 defects in AI-written code with how each was caught and the commit that fixed it. The review caught most of them, a failing test or running the app against Postgres caught others. Examples worth reading:
 
 - The rate limiter was registered in a way that silently never applied to routes mounted through `include_router`. A test for per-user keys on a real route exposed it.
 - The CI secret scan reused the pre-commit hook, which only scans staged files, so it scanned nothing on CI and always passed.
