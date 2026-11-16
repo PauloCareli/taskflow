@@ -138,6 +138,15 @@ def test_ac06_the_web_image_serves_through_the_small_preview_configuration() -> 
     assert "rewrite" in config
 
 
+def test_ac06_the_web_container_starts_without_writing_next_to_its_own_files() -> None:
+    # Vite's default config loader writes a temporary file beside the config; the non-root user
+    # cannot write there, so the container must load the plain ESM config natively instead.
+    final = dockerfile_stages("frontend/Dockerfile")[-1]
+
+    assert "--configLoader" in final
+    assert "native" in final
+
+
 @pytest.mark.parametrize(
     ("path", "required"),
     [
