@@ -9,12 +9,18 @@ import sys
 from collections.abc import Callable
 from datetime import timedelta
 from enum import StrEnum
+from uuid import UUID
+
+from sqlalchemy import delete, or_
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from taskapp.application.create_task import CreateTask
 from taskapp.application.ports import AssignmentMessage
 from taskapp.application.register_user import RegisterUser
 from taskapp.application.update_task import UpdateTask
 from taskapp.domain.status import TaskStatus
+from taskapp.domain.user import User
+from taskapp.infrastructure.db.models import TaskModel, UserModel
 from taskapp.infrastructure.db.session import create_engine, create_session_factory
 from taskapp.infrastructure.db.unit_of_work import SqlUnitOfWork
 from taskapp.infrastructure.security import Argon2PasswordHasher, SystemClock
@@ -48,6 +54,10 @@ _TASKS: tuple[tuple[int, str, TaskStatus, int | None, int | None], ...] = (
 )
 
 
+# Demo users have a published password, so seeding is an allowlist, not a production blocklist.
+_LOCAL_ENVIRONMENTS = frozenset({"local", "dev", "development", "test"})
+
+
 class SeedSettings(DatabaseSettings):
     """Only what the command needs: no JWT secret, no Redis."""
 
@@ -76,38 +86,61 @@ async def seed(database_url: str) -> SeedOutcome:
                 return SeedOutcome.ALREADY_SEEDED
 
         clock, notifier, hasher = SystemClock(), NullNotifier(), Argon2PasswordHasher()
-        users = [
-            await RegisterUser(SqlUnitOfWork(factory), hasher).execute(
-                email=email, name=name, password=DEMO_PASSWORD
-            )
-            for email, name in DEMO_USERS
-        ]
-        for creator, title, status, days, assignee in _TASKS:
-            # A task cannot be created already overdue, so overdue ones start due tomorrow and
-            # have their due date moved back afterwards (which the API allows on update).
-            due = None if days is None else clock.now() + timedelta(days=max(days, 1))
-            task = await CreateTask(SqlUnitOfWork(factory), clock, notifier).execute(
-                users[creator].id,
-                title=title,
-                due_date=due,
-                assignee_id=None if assignee is None else users[assignee].id,
-            )
-            update = UpdateTask(SqlUnitOfWork(factory), clock)
-            if days is not None and days < 0:
-                await update.execute(
-                    users[creator].id, task.id, due_date=clock.now() + timedelta(days=days)
+        users: list[User] = []
+        try:
+            for email, name in DEMO_USERS:
+                users.append(
+                    await RegisterUser(SqlUnitOfWork(factory), hasher).execute(
+                        email=email, name=name, password=DEMO_PASSWORD
+                    )
                 )
-            if status is not TaskStatus.TODO:
-                await update.execute(users[creator].id, task.id, status=status)
+            for creator, title, status, days, assignee in _TASKS:
+                # A task cannot be created already overdue, so overdue ones start due tomorrow
+                # and have their due date moved back afterwards (allowed on update).
+                due = None if days is None else clock.now() + timedelta(days=max(days, 1))
+                task = await CreateTask(SqlUnitOfWork(factory), clock, notifier).execute(
+                    users[creator].id,
+                    title=title,
+                    due_date=due,
+                    assignee_id=None if assignee is None else users[assignee].id,
+                )
+                update = UpdateTask(SqlUnitOfWork(factory), clock)
+                if days is not None and days < 0:
+                    await update.execute(
+                        users[creator].id, task.id, due_date=clock.now() + timedelta(days=days)
+                    )
+                if status is not TaskStatus.TODO:
+                    await update.execute(users[creator].id, task.id, status=status)
+        except BaseException:
+            # Do not leave half the demo data behind: a rerun would think it was complete.
+            await _remove(engine, [u.id for u in users])
+            raise
         return SeedOutcome.SEEDED
     finally:
         await engine.dispose()
 
 
+async def _remove(engine: AsyncEngine, user_ids: list[UUID]) -> None:
+    """Delete the given users and the tasks that refer to them (only what this run created)."""
+    if not user_ids:
+        return
+    async with engine.begin() as connection:
+        await connection.execute(
+            delete(TaskModel).where(
+                or_(TaskModel.creator_id.in_(user_ids), TaskModel.assignee_id.in_(user_ids))
+            )
+        )
+        await connection.execute(delete(UserModel).where(UserModel.id.in_(user_ids)))
+
+
 async def run(settings: SeedSettings, say: Callable[[str], None] = print) -> int:
     """Run the seed; returns the process exit code."""
-    if settings.environment.lower() == "production":
-        say("Refusing to seed: TASKAPP_ENVIRONMENT is production. Nothing was changed.")
+    environment = settings.environment.strip().lower()
+    if environment not in _LOCAL_ENVIRONMENTS:
+        say(
+            f"Refusing to seed: TASKAPP_ENVIRONMENT is {settings.environment!r}, and demo data "
+            f"is only loaded for {', '.join(sorted(_LOCAL_ENVIRONMENTS))}. Nothing was changed."
+        )
         return 1
     if await seed(settings.database_url) is SeedOutcome.ALREADY_SEEDED:
         say("The demo data is already there; nothing was changed.")

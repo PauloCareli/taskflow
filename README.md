@@ -58,7 +58,7 @@ Errors use the body `{"error": {"code", "message", "details"}}`. Passwords are s
 | `just migrate` | Apply database migrations to `TASKAPP_DATABASE_URL` (default: the local Postgres) |
 | `just be` | Run the API with auto-reload |
 | `just worker` | Run a Celery worker (needs Redis from `just up`) |
-| `just seed` | Load the demo users and tasks (run `just migrate` first; does nothing if they are already there; refuses to run when `TASKAPP_ENVIRONMENT=production`) |
+| `just seed` | Load the demo users and tasks (run `just migrate` first; does nothing if they are already there; only runs when `TASKAPP_ENVIRONMENT` is `local`, `dev`, `development` or `test`, and a run that fails halfway removes what it created) |
 | `just test` | Run pytest with coverage (fails under 80%) |
 | `just lint` | ruff check, ruff format check and import-linter contracts |
 | `just typecheck` | mypy in strict mode |
