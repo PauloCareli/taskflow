@@ -63,7 +63,6 @@ export function TaskCard({ task, onView, onEdit, onDelete, onError }: Props) {
           <StatusControl
             task={task}
             canChange={actions.canChangeStatus}
-            busy={actions.busy}
             onChange={actions.changeStatus}
           />
           {isOverdue(task) ? <OverdueTag /> : null}

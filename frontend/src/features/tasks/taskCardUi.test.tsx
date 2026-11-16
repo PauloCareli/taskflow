@@ -252,9 +252,9 @@ describe('menus and modal edge cases', () => {
   it('test_ac06_a_task_that_no_longer_exists_closes_the_modal_with_a_message', async () => {
     const mock = openList([makeTask({ title: 'Gone soon' })])
     await userEvent.click(await screen.findByRole('button', { name: 'Gone soon' }))
-    await screen.findByRole('dialog', { name: 'Gone soon' })
+    const dialog = await screen.findByRole('dialog', { name: 'Gone soon' })
     mock.tasks.splice(0, 1)
-    await userEvent.click(screen.getByRole('button', { name: /^complete/i }))
+    await userEvent.click(within(dialog).getByRole('button', { name: /^complete/i }))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(await screen.findByRole('alert')).toHaveTextContent(/not found/i)
   })
@@ -277,7 +277,7 @@ describe('menus and modal edge cases', () => {
     expect(screen.getByRole('dialog', { name: 'Nested' })).toBeInTheDocument()
   })
 
-  it('test_ac05_the_status_trigger_keeps_focus_and_a_44px_target_while_a_change_is_in_flight', async () => {
+  it('test_ac05_the_status_trigger_keeps_focus_and_a_36px_target_while_a_change_is_in_flight', async () => {
     openList([makeTask({ title: 'Focus stays' })])
     const item = await card('Focus stays')
     await chooseStatus(item, 'Blocked')

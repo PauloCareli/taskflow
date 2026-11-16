@@ -9,10 +9,10 @@ import {
 } from '../api/tasksApi'
 import { taskKeys } from './useTasks'
 
-/** Every mutation refreshes the lists afterwards, also on failure, so the UI shows the truth. */
+/** Every mutation refreshes lists and details afterwards, also on failure, so the UI shows the truth. */
 function useListInvalidation() {
   const queryClient = useQueryClient()
-  return () => queryClient.invalidateQueries({ queryKey: taskKeys.lists() })
+  return () => queryClient.invalidateQueries({ queryKey: taskKeys.all })
 }
 
 export function useCreateTask() {

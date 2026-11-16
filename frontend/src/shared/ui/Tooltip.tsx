@@ -1,10 +1,9 @@
-import { useEffect, useId, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
 type TooltipProps = { content: string; children: ReactNode }
 
 /** Shows `content` in a bubble while the child is hovered or focused; Escape dismisses it. */
 export function Tooltip({ content, children }: TooltipProps) {
-  const id = useId()
   const [hovered, setHovered] = useState(false)
   const [focused, setFocused] = useState(false)
   const open = hovered || focused
@@ -32,7 +31,6 @@ export function Tooltip({ content, children }: TooltipProps) {
       {children}
       {open ? (
         <span
-          id={id}
           role="tooltip"
           className="absolute left-0 top-full z-20 mt-1 max-h-48 w-max max-w-xs overflow-y-auto whitespace-pre-wrap break-words rounded-md border border-border bg-surface p-2 text-sm text-fg shadow-lg"
         >

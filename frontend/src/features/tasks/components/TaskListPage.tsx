@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../../../shared/ui/Button'
 import { useDeleteTask } from '../hooks/useTaskMutations'
-import { useTasks } from '../hooks/useTasks'
+import { useTask, useTasks } from '../hooks/useTasks'
 import type { Task, TaskFilters as Filters } from '../schemas/taskSchemas'
 import { DeleteTaskDialog } from './DeleteTaskDialog'
 import { TaskFormDialog } from './TaskFormDialog'
@@ -23,12 +23,19 @@ export function TaskListPage() {
   const [viewingId, setViewingId] = useState<string | null>(null)
   const [editing, setEditing] = useState<Task | null>(null)
   const [deleting, setDeleting] = useState<Task | null>(null)
-  const viewing = tasks.data?.items.find((task) => task.id === viewingId)
+  const detail = useTask(viewingId)
+  const viewing = detail.data ?? tasks.data?.items.find((task) => task.id === viewingId)
   const total = tasks.data?.total
   const lastPage = total === undefined ? undefined : Math.max(1, Math.ceil(total / size))
 
   // A page can disappear (last item deleted here or elsewhere); fall back to the last one.
   if (lastPage !== undefined && page > lastPage) setPage(lastPage)
+
+  // The viewed task can disappear (deleted elsewhere); close the modal and say so.
+  if (viewingId !== null && detail.isError) {
+    setViewingId(null)
+    setNotice(detail.error.message)
+  }
 
   function confirmDelete(task: Task) {
     setNotice(null)

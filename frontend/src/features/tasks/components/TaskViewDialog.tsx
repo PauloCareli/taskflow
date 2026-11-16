@@ -26,7 +26,6 @@ export function TaskViewDialog({ task, onClose }: Props) {
         <StatusControl
           task={task}
           canChange={actions.canChangeStatus}
-          busy={actions.busy}
           onChange={(status) => {
             setError(null)
             actions.changeStatus(status)

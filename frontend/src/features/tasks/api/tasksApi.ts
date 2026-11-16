@@ -72,3 +72,7 @@ export async function completeTask(id: string): Promise<Task> {
 export async function deleteTask(id: string): Promise<void> {
   await api.delete(`/tasks/${id}`)
 }
+
+export async function getTask(id: string): Promise<Task> {
+  return parse(taskSchema, await api.get(`/tasks/${id}`), 'task')
+}
