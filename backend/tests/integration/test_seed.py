@@ -1,10 +1,12 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+import pytest
 from httpx import AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from taskapp.application.create_task import CreateTask
 from taskapp.domain.status import TERMINAL_STATUSES, TaskStatus
 from taskapp.seed import DEMO_PASSWORD, DEMO_USERS, SeedOutcome, SeedSettings, run, seed
 
@@ -101,3 +103,54 @@ async def test_ac08_the_command_refuses_to_run_in_production_and_changes_nothing
     assert "production" in said[0].lower()
     assert await rows(engine, "SELECT id FROM users") == []
     assert await rows(engine, "SELECT id FROM tasks") == []
+
+
+async def test_ac07_a_run_that_fails_halfway_leaves_nothing_behind_so_a_rerun_works(
+    engine: AsyncEngine, test_database_url: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_execute = CreateTask.execute
+    calls = 0
+
+    async def flaky(self: CreateTask, *args: Any, **kwargs: Any) -> Any:
+        nonlocal calls
+        calls += 1
+        if calls == 5:
+            raise ConnectionError("the database went away")
+        return await real_execute(self, *args, **kwargs)
+
+    monkeypatch.setattr(CreateTask, "execute", flaky)
+
+    with pytest.raises(ConnectionError):
+        await seed(test_database_url)
+
+    assert await rows(engine, "SELECT id FROM users") == []
+    assert await rows(engine, "SELECT id FROM tasks") == []
+    monkeypatch.undo()
+    assert await seed(test_database_url) is SeedOutcome.SEEDED
+
+
+@pytest.mark.parametrize(
+    "environment", ["production", "Production", " production ", "prod", "staging", ""]
+)
+async def test_ac08_only_known_local_environments_may_be_seeded(
+    engine: AsyncEngine, test_database_url: str, environment: str
+) -> None:
+    said: list[str] = []
+
+    code = await run(
+        SeedSettings(database_url=test_database_url, environment=environment), said.append
+    )
+
+    assert code != 0
+    assert await rows(engine, "SELECT id FROM users") == []
+
+
+@pytest.mark.parametrize("environment", ["local", "dev", "development", "test", " Local "])
+async def test_ac08_local_environments_may_be_seeded(
+    engine: AsyncEngine, test_database_url: str, environment: str
+) -> None:
+    code = await run(
+        SeedSettings(database_url=test_database_url, environment=environment), lambda _: None
+    )
+
+    assert code == 0
