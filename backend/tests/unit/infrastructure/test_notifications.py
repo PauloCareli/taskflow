@@ -162,7 +162,7 @@ async def test_ac05_a_broker_that_stays_down_is_retried_a_bounded_number_of_time
 async def test_ac05_an_unreachable_redis_gives_up_quickly_without_raising(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    app = create_celery_app(Settings(jwt_secret=SECRET, redis_url=UNREACHABLE))  # type: ignore[arg-type]
+    app = create_celery_app(Settings(jwt_secret=SECRET, redis_url=UNREACHABLE), publisher=True)  # type: ignore[arg-type]
     task = register_tasks(app)
     started = time.monotonic()
 

@@ -32,6 +32,6 @@ def build_dependencies(settings: Settings) -> Dependencies:
         hasher=Argon2PasswordHasher(),
         tokens=JwtTokenService(settings.jwt_secret.get_secret_value(), clock),
         clock=clock,
-        notifier=CeleryNotifier(register_tasks(create_celery_app(settings))),
+        notifier=CeleryNotifier(register_tasks(create_celery_app(settings, publisher=True))),
         shutdown=engine.dispose,
     )
